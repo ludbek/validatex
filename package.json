@@ -1,0 +1,46 @@
+{
+  "name": "validate-x",
+  "version": "0.1.0",
+  "description": "A validator.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --compilers js:babel-register spec/*",
+    "build": "babel --plugins transform-es2015-modules-commonjs src/ --out-dir lib/",
+    "prepublish": "npm run test && npm run build"
+  },
+  "files": [
+    "src",
+    "index.js",
+    "lib",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ludbek/.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ludbek//issues"
+  },
+  "homepage": "https://github.com/ludbek/#readme",
+  "keywords": [
+	  "validate",
+	  "validator"
+  ],
+  "author": "ludbek",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-core": "^6.11.4",
+    "babel-loader": "^6.2.4",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.11.5",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-register": "^6.11.5",
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3",
+    "webpack": "^1.12.14"
+  },
+  "dependencies": {
+    "lodash": "^4.13.1"
+  }
+}

@@ -1,6 +1,6 @@
 // validate(aData, [validators], multipleErrors, allData)
 
-let validateSingle = (data, validators, multipleErrors, all) => {
+let validateSingle = (data, validators, multipleErrors, all, key) => {
 	let errors = [];
 
 	if (typeof validators === "function") {
@@ -13,7 +13,7 @@ let validateSingle = (data, validators, multipleErrors, all) => {
 			if (cont === false) break;
 		}
 		catch (err) {
-			errors.push(err.message);
+			errors.push(err.message.replace("{value}", data).replace("{key}", key));
 		}
 	}
 
@@ -23,32 +23,22 @@ let validateSingle = (data, validators, multipleErrors, all) => {
 };
 
 
-let isEmpty = (errors) => {
-	let noError = true;
-	for (let prop in errors) {
-		if (errors.hasOwnProperty(prop)) {
-			if (errors[prop] !== undefined) {
-				noError = false;
-				break;
-			}
-		}
-	}
-
-	return noError;
-}
-
-
 let validate = (data, validators, multipleErrors) => {
 	let errors = {};
+	let noError = true;
 
-	if (validators instanceof Object && !validators.length) {
+	if (typeof validators === "object" && !validators.length) {
 		for (let prop in validators) {
 			if (validators.hasOwnProperty(prop)) {
-				errors[prop] = validateSingle(data[prop], validators[prop], multipleErrors, data);
+				let error = validateSingle(data[prop], validators[prop], multipleErrors, data, prop);
+				if (error !== undefined) {
+					noError = false;
+					errors[prop] = error;
+				}
 			}
 		}
 
-		return isEmpty(errors)? undefined: errors;
+		return noError? undefined: errors;
 	}
 
 	errors = validateSingle(data, validators, multipleErrors);

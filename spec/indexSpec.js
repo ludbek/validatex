@@ -41,6 +41,10 @@ let equals = (key) => {
 	}
 }
 
+let isInvalid = () => {
+	throw Error("{key}: invalid value {value}");
+}
+
 describe("validateSingle", () => {
 	it("works with single validator.", () => {
 		let error = validate(1, isNumber);
@@ -78,6 +82,11 @@ describe("validateSingle", () => {
 		let error = validate("string", [required(false), isNumber]);
 		expect(error).to.eql(undefined);
 	});
+
+	it("includes key and value to error template.", () => {
+		let error = validateSingle("Lel", isInvalid, false, undefined, "name");
+		expect(error).to.eql("name: invalid value Lel");
+	});
 });
 
 describe("validate", () => {
@@ -88,7 +97,10 @@ describe("validate", () => {
 
 
 	it("validates non object data", () => {
-		let error = validate("string", [isNumber, isLength(10)]);
+		let error = validate("a", isNumber);
+		expect(error).to.eql("It must be a number.");
+
+		error = validate("string", [isNumber, isLength(10)]);
 		expect(error).to.eql("It must be a number.");
 
 		error = validate(12, [isNumber, isLength(10)]);

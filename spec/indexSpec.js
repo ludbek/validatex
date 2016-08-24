@@ -33,6 +33,14 @@ let required = (flag) => {
 	}
 }
 
+let equals = (key) => {
+	return (data, all) => {
+		if (data !== all[key]) {
+			throw Error("Values are not equal.");
+		}
+	}
+}
+
 describe("validateSingle", () => {
 	it("works with single validator.", () => {
 		let error = validate(1, isNumber);
@@ -73,6 +81,12 @@ describe("validateSingle", () => {
 });
 
 describe("validate", () => {
+	it("returns undefined if composite data is valid.", () => {
+		let error = validate({planet: "earth"}, {planet: [isString]});
+		expect(error).to.not.exist;
+	});
+
+
 	it("validates non object data", () => {
 		let error = validate("string", [isNumber, isLength(10)]);
 		expect(error).to.eql("It must be a number.");
@@ -104,8 +118,7 @@ describe("validate", () => {
 
 		data = {string: "ab", number: 12};
 		error = validate(data, schema);
-		expect(error.string).to.equal(undefined);
-		expect(error.number).to.equal(undefined);
+		expect(error).to.not.exist;
 	});
 
 	it("returns multiple errors", () => {
@@ -118,5 +131,21 @@ describe("validate", () => {
 		let error = validate(data, schema, true);
 		expect(error.string).to.eql(["It must be a string.", "It must be 2 digits long."]);
 		expect(error.number).to.eql(["It must be a number.", "It must be 2 digits long."]);
+	});
+
+	it("passes entire data to validator as second arg", () => {
+		let schema = {
+			"password": [],
+			"confirmPassword": equals("password")
+		};
+
+		let data = {"password": "a", "confirmPassword": "b"};
+		let error = validate(data, schema);
+		expect(error.password).to.not.exist;
+		expect(error.confirmPassword).to.eql("Values are not equal.");
+
+		data.confirmPassword = "a";
+		error = validate(data, schema);
+		expect(error).to.not.exist;
 	});
 });

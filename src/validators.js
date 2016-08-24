@@ -1,0 +1,9 @@
+export const required = () => {};
+export const isNumber = () => {};
+export const isString = () => {};
+export const isFunction = () => {};
+export const isObject = () => {};
+export const isArray = () => {};
+export const hasLength = () => {};
+export const isEmail = () => {};
+export const equals = () => {}; 

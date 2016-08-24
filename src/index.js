@@ -28,7 +28,7 @@ let validate = (data, validators, multipleErrors) => {
 
 	if (validators instanceof Object && !validators.length) {
 		for (let prop in validators) {
-			if (validators.hasOwnProperty(prop) {
+			if (validators.hasOwnProperty(prop)) {
 				errors[prop] = validateSingle(data[prop], validators[prop], multipleErrors);
 			}
 		}
@@ -40,4 +40,4 @@ let validate = (data, validators, multipleErrors) => {
 	return errors
 }
 
-export {validate};
+export {validate, validateSingle};

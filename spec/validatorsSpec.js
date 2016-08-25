@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {required, isNumber} from "../src/validators.js";
+import {required, isNumber, isString} from "../src/validators.js";
 
 
 describe("required", () => {
@@ -68,6 +68,34 @@ describe("isNumber", () => {
 		}
 		catch (err) {
 			expect(err.message).to.equal("jpt");
+		}
+	});
+});
+
+describe("isString", () => {
+	it("exists", () => {
+		expect(isString).to.exist;
+	});
+
+	it("raises exception for non string", () => {
+		try {
+			isString()(0);
+		}
+		catch (err) {
+			expect(err.message).to.equal("'{value}' is not a valid string.");
+		}
+	});
+
+	it("returns 'undefined' for string", () => {
+		expect(isString()("string")).to.not.exist;
+	});
+
+	it("accepts custome error", () => {
+		try {
+			isString("a")(0);
+		}
+		catch (err) {
+			expect(err.message).to.equal("a");
 		}
 	});
 });

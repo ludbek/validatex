@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {required} from "../src/validators.js";
+import {required, isNumber} from "../src/validators.js";
 
 
 describe("required", () => {
@@ -31,6 +31,43 @@ describe("required", () => {
 		}
 		catch (err) {
 			expect(err.msg).to.equal("Custom Error");
+		}
+	});
+});
+
+describe("isNumber", () => {
+	it("exists", () => {
+		expect(isNumber).to.exist;
+	});
+
+	it("raises exception if value is not a number", () => {
+		try {
+			isNumber()("a");
+		}
+		catch (err) {
+			expect(err.message).to.equal("'{value}' is not a valid number.");
+		}
+	});
+
+	it("returns nth if value is a number", () => {
+		expect(isNumber()(1)).to.not.exist;
+	});
+
+	it("raises exception for NaN", () => {
+		try {
+			isNumber()(NaN);
+		}
+		catch (err) {
+			expect(err.message).to.equal("'{value}' is not a valid number.");
+		}
+	});
+
+	it("accepts custom error", () => {
+		try {
+			isNumber("jpt")("a");
+		}
+		catch (err) {
+			expect(err.message).to.equal("jpt");
 		}
 	});
 });

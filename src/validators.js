@@ -11,9 +11,9 @@ export const required = (flag, error) => {
 };
 
 export const isNumber = (error) => {
-	return (data) => {
-		if (typeof data !== "number") {
-			throw Error(error || "It must be a number.");
+	return (value) => {
+		if (typeof value !== "number" || isNaN(value)) {
+			throw Error(error || "'{value}' is not a valid number.");
 		}
 	};
 };
@@ -21,7 +21,7 @@ export const isNumber = (error) => {
 export const isString = (error) => {
 	return (data) => {
 		if (typeof data !== "string") {
-			throw Error(error || "It must be a string.");
+			throw Error(error || "'{value}' is not a valid string.");
 		}
 	};
 };

@@ -1,9 +1,52 @@
-export const required = () => {};
-export const isNumber = () => {};
-export const isString = () => {};
+export const required = (flag, error) => {
+	return (data) => {
+		if (flag && !data) {
+			throw Error(error || "This field is required.");
+		}
+		else if (!flag && !data) {
+			// skip rest of the validators
+			return false;
+		}
+	}
+};
+
+export const isNumber = (error) => {
+	return (data) => {
+		if (typeof data !== "number") {
+			throw Error(error || "It must be a number.");
+		}
+	};
+};
+
+export const isString = (error) => {
+	return (data) => {
+		if (typeof data !== "string") {
+			throw Error(error || "It must be a string.");
+		}
+	};
+};
+
 export const isFunction = () => {};
 export const isObject = () => {};
 export const isArray = () => {};
-export const hasLength = () => {};
+export const includes = () => {};
+export const excludes = () => {};
+
+export const hasLength = (length, error) => {
+	return (data) => {
+		let str = data + "";
+		if (str.length !== length) {
+			throw Error(error || `It must be ${length} digits long.`);
+		}
+	};
+};
+
 export const isEmail = () => {};
-export const equals = () => {}; 
+
+export const equalsTo = (key, error) => {
+	return (data, all) => {
+		if (data !== all[key]) {
+			throw Error(error || "Values are not equal.");
+		}
+	}
+}; 

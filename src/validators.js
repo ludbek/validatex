@@ -29,7 +29,7 @@ export const isString = (error) => {
 export const isFunction = (error) => {
 	return (value) => {
 		if (typeof value !== "function") {
-			throw Error(error || "A function is expected.");
+			throw Error(error || "Expected a function.");
 		}
 	}
 };
@@ -42,7 +42,14 @@ export const isObject = (error) => {
 	};
 };
 
-export const isArray = () => {};
+export const isArray = (error) => {
+	return (value) => {
+		if (Object.prototype.toString.call(value) !== "[object Array]") {
+			throw Error(error || "Expected an array.");
+		}
+	}
+};
+
 export const includes = () => {};
 export const excludes = () => {};
 

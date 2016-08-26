@@ -4,6 +4,7 @@ import {required,
 		isString,
 		equalsTo,
 		isEmail,
+		isArray,
 		isObject,
 		isFunction} from "../src/validators.js";
 
@@ -174,7 +175,7 @@ describe("isFunction", () => {
 			isFunction()("not a function");
 		}
 		catch (err) {
-			expect(err.message).to.equal("A function is expected.");
+			expect(err.message).to.equal("Expected a function.");
 		}
 	});
 
@@ -218,6 +219,34 @@ describe("isObject", () => {
 		}
 		catch (err) {
 			expect(err.message).to.equal("Please pass an object.");
+		}
+	});
+});
+
+describe("isArray", () => {
+	it("exists", () => {
+		expect(isArray).to.exist;
+	});
+
+	it("throws exception if function is not supplied.", () => {
+		try {
+			isArray()("not an array");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Expected an array.");
+		}
+	});
+
+	it("returns 'undefined' if function is supplied.", () => {
+		expect(isArray()([])).to.not.exist;
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			isArray("Please pass an array.")("not an array");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Please pass an array.");
 		}
 	});
 });

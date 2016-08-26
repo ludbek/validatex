@@ -1,9 +1,9 @@
 export const required = (flag, error) => {
-	return (data) => {
-		if (flag && !data) {
+	return (value) => {
+		if (flag && !value) {
 			throw Error(error || "This field is required.");
 		}
-		else if (!flag && !data) {
+		else if (!flag && !value) {
 			// skip rest of the validators
 			return false;
 		}
@@ -19,8 +19,8 @@ export const isNumber = (error) => {
 };
 
 export const isString = (error) => {
-	return (data) => {
-		if (typeof data !== "string") {
+	return (value) => {
+		if (typeof value !== "string") {
 			throw Error(error || "'{value}' is not a valid string.");
 		}
 	};
@@ -33,8 +33,8 @@ export const includes = () => {};
 export const excludes = () => {};
 
 export const hasLength = (length, error) => {
-	return (data) => {
-		let str = data + "";
+	return (value) => {
+		let str = value + "";
 		if (str.length !== length) {
 			throw Error(error || `It must be ${length} digits long.`);
 		}
@@ -44,9 +44,9 @@ export const hasLength = (length, error) => {
 export const isEmail = () => {};
 
 export const equalsTo = (key, error) => {
-	return (data, all) => {
-		if (data !== all[key]) {
-			throw Error(error || "Values are not equal.");
+	return (value, all) => {
+		if (value !== all[key]) {
+			throw Error(error || `'${value}' is not equal to '${all[key]}'.`);
 		}
 	}
 }; 

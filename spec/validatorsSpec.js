@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {required, isNumber, isString} from "../src/validators.js";
+import {required, isNumber, isString, equalsTo} from "../src/validators.js";
 
 
 describe("required", () => {
@@ -90,12 +90,41 @@ describe("isString", () => {
 		expect(isString()("string")).to.not.exist;
 	});
 
-	it("accepts custome error", () => {
+	it("accepts custom error", () => {
 		try {
 			isString("a")(0);
 		}
 		catch (err) {
 			expect(err.message).to.equal("a");
+		}
+	});
+});
+
+
+describe("equalsTo", () => {
+	it("exists", () => {
+		expect(equalsTo).to.exist;
+	});
+
+	it("raises exception if values are not equal.", () => {
+		try {
+			equalsTo("password")("apple", {password: "banana"});
+		}
+		catch (err) {
+			expect(err.message).to.equal("'apple' is not equal to 'banana'.");
+		}
+	});
+
+	it("returns undefined if values are equal", () => {
+		expect(equalsTo("password")("banana", {password: "banana"})).to.not.exist;
+	});
+
+	it("accepts custom error", () => {
+		try {
+			equalsTo("password", "a error")("apple", {password: "banana"});
+		}
+		catch (err) {
+			expect(err.message).to.equal("a error");
 		}
 	});
 });

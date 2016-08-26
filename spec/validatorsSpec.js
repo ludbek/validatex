@@ -6,6 +6,7 @@ import {required,
 		isEmail,
 		isArray,
 		isObject,
+		oneOf,
 		isFunction} from "../src/validators.js";
 
 
@@ -247,6 +248,34 @@ describe("isArray", () => {
 		}
 		catch (err) {
 			expect(err.message).to.equal("Please pass an array.");
+		}
+	});
+});
+
+describe("oneOf", () => {
+	it("exists", () => {
+		expect(oneOf).to.exist;
+	});
+
+	it("throws exception if value does not fall under the given list.", () => {
+		try {
+			oneOf([1,3,5])(2);
+		}
+		catch (err) {
+			expect(err.message).to.equal("'{value}' does not fall under the given list.");
+		}
+	});
+
+	it("returns 'undefined' value falls under the given list.", () => {
+		expect(oneOf([1,3,5])(3)).to.not.exist;
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			oneOf([1,3,5], "Please pass an odd number.")(2);
+		}
+		catch (err) {
+			expect(err.message).to.equal("Please pass an odd number.");
 		}
 	});
 });

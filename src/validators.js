@@ -50,7 +50,21 @@ export const isArray = (error) => {
 	}
 };
 
-export const includes = () => {};
+export const oneOf = (list, error) => {
+	return (value) => {
+		let hasAMatch = false;
+		for(let i = 0; i < list.length; i ++) {
+			if (list[i] === value) {
+				hasAMatch = true;
+			}
+		}
+		
+		if (!hasAMatch) {
+			throw Error(error || "'{value}' does not fall under the given list.");
+		}
+	};
+};
+
 export const excludes = () => {};
 
 export const hasLength = (length, error) => {

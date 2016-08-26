@@ -34,7 +34,14 @@ export const isFunction = (error) => {
 	}
 };
 
-export const isObject = () => {};
+export const isObject = (error) => {
+	return (value) => {
+		if (value !== Object(value)) {
+			throw Error(error || "Expected an object.");
+		}
+	};
+};
+
 export const isArray = () => {};
 export const includes = () => {};
 export const excludes = () => {};

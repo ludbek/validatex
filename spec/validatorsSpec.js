@@ -1,5 +1,11 @@
 import {expect} from "chai";
-import {required, isNumber, isString, equalsTo, isEmail, isFunction} from "../src/validators.js";
+import {required,
+		isNumber,
+		isString,
+		equalsTo,
+		isEmail,
+		isObject,
+		isFunction} from "../src/validators.js";
 
 
 describe("required", () => {
@@ -183,6 +189,35 @@ describe("isFunction", () => {
 		}
 		catch (err) {
 			expect(err.message).to.equal("Please pass a function.");
+		}
+	});
+});
+
+describe("isObject", () => {
+	it("exists", () => {
+		expect(isObject).to.exist;
+	});
+
+	it("throws exception if function is not supplied.", () => {
+		try {
+			isObject()("not an object");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Expected an object.");
+		}
+	});
+
+	it("returns 'undefined' if function is supplied.", () => {
+		let aObj = {};
+		expect(isObject()(aObj)).to.not.exist;
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			isObject("Please pass an object.")("not an object");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Please pass an object.");
 		}
 	});
 });

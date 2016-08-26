@@ -65,7 +65,15 @@ export const oneOf = (list, error) => {
 	};
 };
 
-export const excludes = () => {};
+export const noneOf = (list, error) => {
+	return (value) => {
+		for(let i = 0; i < list.length; i ++) {
+			if (list[i] === value) {
+				throw Error(error || "'{value}' is not allowed.");
+			}
+		}
+	};
+};
 
 export const hasLength = (length, error) => {
 	return (value) => {

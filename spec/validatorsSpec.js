@@ -7,6 +7,7 @@ import {required,
 		isArray,
 		isObject,
 		oneOf,
+		noneOf,
 		isFunction} from "../src/validators.js";
 
 
@@ -276,6 +277,34 @@ describe("oneOf", () => {
 		}
 		catch (err) {
 			expect(err.message).to.equal("Please pass an odd number.");
+		}
+	});
+});
+
+describe("noneOf", () => {
+	it("exists", () => {
+		expect(noneOf).to.exist;
+	});
+
+	it("throws exception if value falls under the given list.", () => {
+		try {
+			noneOf([1,3,5])(1);
+		}
+		catch (err) {
+			expect(err.message).to.equal("'{value}' is not allowed.");
+		}
+	});
+
+	it("returns 'undefined' value falls under the given list.", () => {
+		expect(noneOf([1,3,5])(2)).to.not.exist;
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			noneOf([1,3,5], "Odd numbers are not allowed.")(3);
+		}
+		catch (err) {
+			expect(err.message).to.equal("Odd numbers are not allowed.");
 		}
 	});
 });

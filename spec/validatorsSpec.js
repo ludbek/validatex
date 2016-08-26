@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {required, isNumber, isString, equalsTo} from "../src/validators.js";
+import {required, isNumber, isString, equalsTo, isEmail} from "../src/validators.js";
 
 
 describe("required", () => {
@@ -122,6 +122,35 @@ describe("equalsTo", () => {
 	it("accepts custom error", () => {
 		try {
 			equalsTo("password", "a error")("apple", {password: "banana"});
+		}
+		catch (err) {
+			expect(err.message).to.equal("a error");
+		}
+	});
+});
+
+
+describe("isEmail", () => {
+	it("exists.", () => {
+		expect(isEmail).to.exist;
+	});
+
+	it("throws exception for invalid email.", () => {
+		try {
+			isEmail()("foo")
+		}
+		catch (err) {
+			expect(err.message).to.equal("Invalid email id.");
+		}
+	});
+
+	it("returns undefined for valid email.", () => {
+		expect(isEmail()("foo@fooland.com")).to.equal(undefined);
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			isEmail("a error")("foo")
 		}
 		catch (err) {
 			expect(err.message).to.equal("a error");

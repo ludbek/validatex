@@ -41,7 +41,14 @@ export const hasLength = (length, error) => {
 	};
 };
 
-export const isEmail = () => {};
+export const isEmail = (error) => {
+	return (value) => {
+		let pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		if (!pattern.test(value)) {
+			throw Error(error || "Invalid email id.");
+		}
+	};
+};
 
 export const equalsTo = (key, error) => {
 	return (value, all) => {

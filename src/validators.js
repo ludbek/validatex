@@ -26,7 +26,14 @@ export const isString = (error) => {
 	};
 };
 
-export const isFunction = () => {};
+export const isFunction = (error) => {
+	return (value) => {
+		if (typeof value !== "function") {
+			throw Error(error || "A function is expected.");
+		}
+	}
+};
+
 export const isObject = () => {};
 export const isArray = () => {};
 export const includes = () => {};

@@ -119,7 +119,7 @@ describe("validate", () => {
 		let data = {"password": "a", "confirmPassword": "b"};
 		let error = validate(data, schema);
 		expect(error.password).to.not.exist;
-		expect(error.confirmPassword).to.eql("'b' is not equal to 'a'.");
+		expect(error.confirmPassword).to.eql("'confirmPassword' and 'password' do not match.");
 
 		data.confirmPassword = "a";
 		error = validate(data, schema);

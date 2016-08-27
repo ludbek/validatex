@@ -120,7 +120,7 @@ describe("equalsTo", () => {
 			equalsTo("password")("apple", {password: "banana"});
 		}
 		catch (err) {
-			expect(err.message).to.equal("'apple' is not equal to 'banana'.");
+			expect(err.message).to.equal("'{key}' and 'password' do not match.");
 		}
 	});
 

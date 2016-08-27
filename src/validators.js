@@ -96,7 +96,7 @@ export const isEmail = (error) => {
 export const equalsTo = (key, error) => {
 	return (value, all) => {
 		if (value !== all[key]) {
-			throw Error(error || `'${value}' is not equal to '${all[key]}'.`);
+			throw Error(error || `'{key}' and '${key}' do not match.`);
 		}
 	}
 }; 

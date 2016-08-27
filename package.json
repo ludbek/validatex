@@ -16,12 +16,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ludbek/.git"
+    "url": "git+https://github.com/ludbek/validatex.git"
   },
   "bugs": {
-    "url": "https://github.com/ludbek//issues"
+    "url": "https://github.com/ludbek/validatex/issues"
   },
-  "homepage": "https://github.com/ludbek/#readme",
+  "homepage": "https://github.com/ludbek/validatex#readme",
   "keywords": [
 	  "validate",
 	  "validator"
@@ -39,8 +39,5 @@
     "chai": "^3.5.0",
     "mocha": "^2.5.3",
     "webpack": "^1.12.14"
-  },
-  "dependencies": {
-    "lodash": "^4.13.1"
   }
 }

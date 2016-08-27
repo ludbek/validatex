@@ -125,4 +125,15 @@ describe("validate", () => {
 		error = validate(data, schema);
 		expect(error).to.not.exist;
 	});
+
+	it("sets error of a key in composite data to 'undefined' if its valid.", () => {
+		let schema = {
+			"password": required(true),
+			"confirmPassword": equalsTo("password")
+		};
+
+		let data = {"password": "a", "confirmPassword": "b"};
+		let error = validate(data, schema);
+		expect(error.password).to.not.exist;
+	});
 });

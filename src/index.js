@@ -31,10 +31,12 @@ let validate = (data, validators, multipleErrors) => {
 		for (let prop in validators) {
 			if (validators.hasOwnProperty(prop)) {
 				let error = validateSingle(data[prop], validators[prop], multipleErrors, data, prop);
+
 				if (error !== undefined) {
 					noError = false;
-					errors[prop] = error;
 				}
+
+				errors[prop] = error;
 			}
 		}
 

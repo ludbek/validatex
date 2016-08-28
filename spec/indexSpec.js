@@ -1,5 +1,5 @@
 import {validate, validateSingle} from "../src/index.js";
-import {isNumber, isString, hasLength, required, equalsTo} from "../src/validators.js";
+import {isNumber, isString, length, required, equalsTo} from "../src/validators.js";
 import {expect} from "chai";
 
 
@@ -18,26 +18,26 @@ describe("validateSingle", () => {
 	});
 
 	it("works with multiple validators.", () => {
-		let error = validate(9876543210, [isNumber(), hasLength(10)]);
+		let error = validate(9876543210, [isNumber(), length(10)]);
 		expect(error).to.equal(undefined);
 
 
-		error = validate(1, [isNumber(), hasLength(10)]);
-		expect(error).to.equal("It must be 10 digits long.");
+		error = validate(1, [isNumber(), length(10)]);
+		expect(error).to.equal("It must be 10 characters long.");
 	});
 
 	it("returns single error by default.", () => {
-		let error = validate("string", [isNumber(), hasLength(10)]);
+		let error = validate("string", [isNumber(), length(10)]);
 		expect(error).to.equal("'string' is not a valid number.");
 	});
 
 	it("returns multiple errors.", () => {
-		let error = validate("string", [isNumber(), hasLength(10)], true);
-		expect(error).to.eql(["'string' is not a valid number.", "It must be 10 digits long."]);
+		let error = validate("string", [isNumber(), length(10)], true);
+		expect(error).to.eql(["'string' is not a valid number.", "It must be 10 characters long."]);
 	});
 
 	it("returns empty error.", () => {
-		let error = validate(9876543210, [isNumber(), hasLength(10)], true);
+		let error = validate(9876543210, [isNumber(), length(10)], true);
 		expect(error).to.eql([]);
 	});
 
@@ -63,20 +63,20 @@ describe("validate", () => {
 		let error = validate("a", isNumber());
 		expect(error).to.eql("'a' is not a valid number.");
 
-		error = validate("string", [isNumber(), hasLength(10)]);
+		error = validate("string", [isNumber(), length(10)]);
 		expect(error).to.eql("'string' is not a valid number.");
 
-		error = validate(12, [isNumber(), hasLength(10)]);
-		expect(error).to.eql("It must be 10 digits long.");
+		error = validate(12, [isNumber(), length(10)]);
+		expect(error).to.eql("It must be 10 characters long.");
 
-		error = validate(1234567890, [isNumber(), hasLength(10)]);
+		error = validate(1234567890, [isNumber(), length(10)]);
 		expect(error).to.equal(undefined);
 	});
 
 	it("validates object data", () => {
 		let schema = {
-			"string": [isString(), hasLength(2)],
-			"number": [isNumber(), hasLength(2)]
+			"string": [isString(), length(2)],
+			"number": [isNumber(), length(2)]
 		};
 
 		let data = {};
@@ -87,8 +87,8 @@ describe("validate", () => {
 
 		data = {string: "earth", number: 123};
 		error = validate(data, schema);
-		expect(error.string).to.eql("It must be 2 digits long.");
-		expect(error.number).to.eql("It must be 2 digits long.");
+		expect(error.string).to.eql("It must be 2 characters long.");
+		expect(error.number).to.eql("It must be 2 characters long.");
 
 
 		data = {string: "ab", number: 12};
@@ -98,16 +98,16 @@ describe("validate", () => {
 
 	it("returns multiple errors", () => {
 		let schema = {
-			"string": [isString(), hasLength(2)],
-			"number": [isNumber(), hasLength(2)]
+			"string": [isString(), length(2)],
+			"number": [isNumber(), length(2)]
 		};
 
 		let data = {};
 		let error = validate(data, schema, true);
 		expect(error.string).to.eql(
-				["'undefined' is not a valid string.", "It must be 2 digits long."]);
+				["'undefined' is not a valid string.", "It must be 2 characters long."]);
 		expect(error.number).to.eql(
-				["'undefined' is not a valid number.", "It must be 2 digits long."]);
+				["'undefined' is not a valid number.", "It must be 2 characters long."]);
 	});
 
 	it("passes entire data to validator as second arg", () => {

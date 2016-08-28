@@ -8,6 +8,9 @@ import {required,
 		isObject,
 		oneOf,
 		noneOf,
+		length,
+		minLength,
+		maxLength,
 		isFunction} from "../src/validators.js";
 
 
@@ -308,3 +311,33 @@ describe("noneOf", () => {
 		}
 	});
 });
+
+describe("length", () => {
+	it("exists", () => {
+		expect(length).to.exist;
+	});
+
+	it("throws exception if data is of wrong length.", () => {
+		try {
+			length(5)("123");
+		}
+		catch (err) {
+			expect(err.message).to.equal("It must be 5 characters long.");
+		}
+	});
+
+	it("returns 'undefined' if data is of right lenght.", () => {
+		expect(length(5)("12345")).to.not.exist;
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			length(5, "Data is of wrong length.")("1");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Data is of wrong length.");
+		}
+	});
+});
+
+

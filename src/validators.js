@@ -75,11 +75,11 @@ export const noneOf = (list, error) => {
 	};
 };
 
-export const hasLength = (length, error) => {
+export const length = (length, error) => {
 	return (value) => {
 		let str = value + "";
 		if (str.length !== length) {
-			throw Error(error || `It must be ${length} digits long.`);
+			throw Error(error || `It must be ${length} characters long.`);
 		}
 	};
 };
@@ -100,3 +100,21 @@ export const equalsTo = (key, error) => {
 		}
 	}
 }; 
+
+export const minLength = (length, error) => {
+	return (value) => {
+		let str = value + "";
+		if (str.length < length) {
+			throw Error(error || `It must be at least ${length} characters long.`);
+		}
+	};
+};
+
+export const maxLength = (length, error) => {
+	return (value) => {
+		let str = value + "";
+		if (str.length > length) {
+			throw Error(error || `It must be at most ${length} characters long.`);
+		}
+	};
+};

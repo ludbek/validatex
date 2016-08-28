@@ -209,6 +209,5 @@ validate(data, schema);
 //   confirmPassword: "'confirmPassword' and 'password' do not match." }
 ```
 
-
 ## Validators
 

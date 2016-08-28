@@ -340,4 +340,33 @@ describe("length", () => {
 	});
 });
 
+describe("minLength", () => {
+	it("exists", () => {
+		expect(minLength).to.exist;
+	});
+
+	it("throws exception if data is of wrong length.", () => {
+		try {
+			minLength(5)("1234");
+		}
+		catch (err) {
+			expect(err.message).to.equal("It must be at least 5 characters long.");
+		}
+	});
+
+	it("returns 'undefined' if data is of right lenght.", () => {
+		expect(minLength(5)("12345")).to.not.exist;
+		expect(minLength(5)("123456")).to.not.exist;
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			minLength(5, "Data is of wrong length.")("1");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Data is of wrong length.");
+		}
+	});
+});
+
 

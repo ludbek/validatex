@@ -17,7 +17,7 @@ let validateSingle = (data, validators, multipleErrors, all, key) => {
 		}
 	}
 
-	if (multipleErrors) return errors;
+	if (multipleErrors === true) return errors;
 	
 	if (errors.length > 0) return errors[0];
 };

@@ -10,12 +10,12 @@ A simple yet powerful data validator for javascript.
 
 ## Quick walk through
 ```javascript
-import {validate, minLength, required, equalsTo} from "validatex";
+import {validate, ValidationError, minLength, required, equalsTo} from "validatex";
 
 // custom validator
 let isUsername = (value) => {
 	if (!/^[a-z0-9]{4,}$/.test(value)) {
-		throw Error("Invalid username.");
+		throw new ValidationError("Invalid username.");
 	}
 }
 
@@ -128,7 +128,7 @@ Lets create a naive email validator.
 ```javascript
 let isEmail = (value) => {
 	if (!/.+@.+\..+/.test(value)) {
-		throw Error("Invalid email.");
+		throw new ValidationError("Invalid email.");
 	}
 };
 
@@ -149,7 +149,7 @@ let minLength = (length, error) => {
 	// return actual validator
 	return (value) => {
 		if (value.length < length) {
-			throw Error(error || `It must be at least ${length} characters long.`);
+			throw new ValidationError(error || `It must be at least ${length} characters long.`);
 		}
 	};
 };
@@ -166,7 +166,7 @@ A validator can return `false` to skip rest of the validation. This is how `requ
 let required = (flag, error) => {
 	return (value) => {
 		if (flag && !value) {
-			throw Error(error || "This field is required.");
+			throw new ValidationError(error || "This field is required.");
 		}
 		else if (!flag && !value) {
 			// skip rest of the validators
@@ -188,7 +188,7 @@ let equalsTo = (key, error) => {
 	// 'all' is entire data being validated
 	return (value, all) => {
 		if (value !== all[key]) {
-			throw Error(error || `'{key}' and '${key}' do not match.`);
+			throw new ValidationError(error || `'{key}' and '${key}' do not match.`);
 		}
 	}
 }; 

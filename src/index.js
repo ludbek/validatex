@@ -1,4 +1,7 @@
-// validate(aData, [validators], multipleErrors, allData)
+let ValidationError = function (message) {
+	this.name = "ValidationError";
+	this.message = message;
+};
 
 let validateSingle = (data, validators, multipleErrors, all, key) => {
 	let errors = [];
@@ -13,7 +16,9 @@ let validateSingle = (data, validators, multipleErrors, all, key) => {
 			if (cont === false) break;
 		}
 		catch (err) {
-			errors.push(err.message.replace("{value}", data).replace("{key}", key));
+			if (err instanceof ValidationError) {
+				errors.push(err.message.replace("{value}", data).replace("{key}", key));
+			}
 		}
 	}
 
@@ -47,4 +52,4 @@ let validate = (data, validators, multipleErrors) => {
 	return errors
 }
 
-export {validate, validateSingle};
+export {validate, validateSingle, ValidationError};

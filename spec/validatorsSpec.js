@@ -13,6 +13,7 @@ import {required,
 		maxLength,
 		isBoolean,
 		isFunction} from "../src/validators.js";
+import {ValidationError} from "../src/index.js";
 
 
 describe("required", () => {
@@ -31,7 +32,7 @@ describe("required", () => {
 	});
 
 	it("raises exception if required and data is null ", () => {
-		expect(required(true).bind(null)).to.throw(Error);
+		expect(required(true).bind(null)).to.throw(ValidationError);
 	});
 
 	it("returns undefined if required and data is not null", () => {

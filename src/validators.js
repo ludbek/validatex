@@ -1,7 +1,10 @@
+import {ValidationError} from "./index.js";
+
+
 export const required = (flag, error) => {
 	return (value) => {
 		if (flag && !value) {
-			throw Error(error || "This field is required.");
+			throw new ValidationError(error || "This field is required.");
 		}
 		else if (!flag && !value) {
 			// skip rest of the validators
@@ -13,7 +16,7 @@ export const required = (flag, error) => {
 export const isNumber = (error) => {
 	return (value) => {
 		if (typeof value !== "number" || isNaN(value)) {
-			throw Error(error || "'{value}' is not a valid number.");
+			throw new ValidationError(error || "'{value}' is not a valid number.");
 		}
 	};
 };
@@ -21,7 +24,7 @@ export const isNumber = (error) => {
 export const isString = (error) => {
 	return (value) => {
 		if (typeof value !== "string") {
-			throw Error(error || "'{value}' is not a valid string.");
+			throw new ValidationError(error || "'{value}' is not a valid string.");
 		}
 	};
 };
@@ -29,7 +32,7 @@ export const isString = (error) => {
 export const isFunction = (error) => {
 	return (value) => {
 		if (typeof value !== "function") {
-			throw Error(error || "Expected a function.");
+			throw new ValidationError(error || "Expected a function.");
 		}
 	}
 };
@@ -37,7 +40,7 @@ export const isFunction = (error) => {
 export const isObject = (error) => {
 	return (value) => {
 		if (value !== Object(value)) {
-			throw Error(error || "Expected an object.");
+			throw new ValidationError(error || "Expected an object.");
 		}
 	};
 };
@@ -45,7 +48,7 @@ export const isObject = (error) => {
 export const isArray = (error) => {
 	return (value) => {
 		if (Object.prototype.toString.call(value) !== "[object Array]") {
-			throw Error(error || "Expected an array.");
+			throw new ValidationError(error || "Expected an array.");
 		}
 	}
 };
@@ -60,7 +63,7 @@ export const oneOf = (list, error) => {
 		}
 		
 		if (!hasAMatch) {
-			throw Error(error || "'{value}' does not fall under the given list.");
+			throw new ValidationError(error || "'{value}' does not fall under the given list.");
 		}
 	};
 };
@@ -69,7 +72,7 @@ export const noneOf = (list, error) => {
 	return (value) => {
 		for(let i = 0; i < list.length; i ++) {
 			if (list[i] === value) {
-				throw Error(error || "'{value}' is not allowed.");
+				throw new ValidationError(error || "'{value}' is not allowed.");
 			}
 		}
 	};
@@ -79,7 +82,7 @@ export const length = (length, error) => {
 	return (value) => {
 		let str = value + "";
 		if (str.length !== length) {
-			throw Error(error || `It must be ${length} characters long.`);
+			throw new ValidationError(error || `It must be ${length} characters long.`);
 		}
 	};
 };
@@ -88,7 +91,7 @@ export const isEmail = (error) => {
 	return (value) => {
 		let pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 		if (!pattern.test(value)) {
-			throw Error(error || "Invalid email id.");
+			throw new ValidationError(error || "Invalid email id.");
 		}
 	};
 };
@@ -96,7 +99,7 @@ export const isEmail = (error) => {
 export const equalsTo = (key, error) => {
 	return (value, all) => {
 		if (value !== all[key]) {
-			throw Error(error || `'{key}' and '${key}' do not match.`);
+			throw new ValidationError(error || `'{key}' and '${key}' do not match.`);
 		}
 	}
 }; 
@@ -105,7 +108,7 @@ export const minLength = (length, error) => {
 	return (value) => {
 		let str = value + "";
 		if (str.length < length) {
-			throw Error(error || `It must be at least ${length} characters long.`);
+			throw new ValidationError(error || `It must be at least ${length} characters long.`);
 		}
 	};
 };
@@ -114,7 +117,7 @@ export const maxLength = (length, error) => {
 	return (value) => {
 		let str = value + "";
 		if (str.length > length) {
-			throw Error(error || `It must be at most ${length} characters long.`);
+			throw new ValidationError(error || `It must be at most ${length} characters long.`);
 		}
 	};
 };

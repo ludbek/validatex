@@ -1,11 +1,11 @@
-import {validate, validateSingle} from "../src/index.js";
+import {validate, validateSingle, ValidationError} from "../src/index.js";
 import {isNumber, isString, length, required, equalsTo} from "../src/validators.js";
 import {expect} from "chai";
 
 
 
 let isInvalid = () => {
-	throw Error("{key}: invalid value {value}");
+	throw new ValidationError("{key}: invalid value {value}");
 }
 
 describe("validateSingle", () => {

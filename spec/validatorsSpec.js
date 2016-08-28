@@ -11,6 +11,7 @@ import {required,
 		length,
 		minLength,
 		maxLength,
+		isBoolean,
 		isFunction} from "../src/validators.js";
 
 
@@ -394,6 +395,35 @@ describe("minLength", () => {
 		}
 		catch (err) {
 			expect(err.message).to.equal("Data is of wrong length.");
+		}
+	});
+});
+
+describe("isBoolean", () => {
+	it("exists", () => {
+		expect(isBoolean).to.exist;
+	});
+
+	it("throws exception if data is of wrong length.", () => {
+		try {
+			isBoolean()("true");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Invalid boolean value.");
+		}
+	});
+
+	it("returns 'undefined' if data is a boolean.", () => {
+		expect(isBoolean()(true)).to.not.exist;
+		expect(isBoolean()(false)).to.not.exist;
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			isBoolean("Not a boolean.")("false");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Not a boolean.");
 		}
 	});
 });

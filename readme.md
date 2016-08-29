@@ -35,14 +35,14 @@ let data = {
 
 // validate data against the schema
 validate(data, signupSchema);
-// output:
+// =>
 // { username: "Invalid username.",
 //   password: "'password' must be at least 8 digits long.",
 //   confirmPassword: "'confirmPassword' and 'password' do not match." }
 
 // get multiple errors
 validate(data, signupSchema, true);
-// output:
+// =>
 // { username: [ "Invalid username." ],
 //   password: [ "'password' must be at least 8 digits long." ],
 //   confirmPassword: 
@@ -59,24 +59,29 @@ Single piece of data can be validated against single or multiple validators
 
 ### With single validator
 ```javascript
-validate(1, isString()); // '1' is not a valid string.
+validate(1, isString());
+// => '1' is not a valid string.
 
-validate("apple", isString()); // undefined
+validate("apple", isString());
+// => undefined
 ```
 
 ### With multiple validators
 ```javascript
-validate("", [required(true), isNumber()]); // This field is required.
+validate("", [required(true), isNumber()]);
+// => This field is required.
 ```
 
 ### Get multiple errors
 Pass `true` as the 3rd argument to the `validate` function to get multiple errors.
 
-``javascript
-validate("", [required(true), isNumber()], true); // [ "This field is required.", "'' is not a valid number." ]
+```javascript
+validate("", [required(true), isNumber()], true);
+// => [ "This field is required.", "'' is not a valid number." ]
 
 // returns empty list if data is valid
-validate(1, [required(true), isNumber()], true); // []
+validate(1, [required(true), isNumber()], true);
+// => []
 ```
 
 ## Validate multiple data
@@ -93,7 +98,8 @@ let loginData = {
 	password: ""
 };
 
-validate(loginData, loginSchema); // { username: undefined, password: 'This field is required.' }
+validate(loginData, loginSchema);
+// => { username: undefined, password: 'This field is required.' }
 ```
 
 ### Get multiple errors
@@ -101,7 +107,7 @@ Pass `true` as the 3rd argument to the `validate` function to get multiple error
 
 ```javascript
 validate(loginData, loginSchema, true);
-//output:
+// =>
 // { username: [],
 //   password: 
 //    [ "This field is required.",
@@ -112,17 +118,20 @@ validate(loginData, loginSchema, true);
 Depending upon the validators custom error can be passed as an extra argument.
 
 ```javascript
-validate("", required(true, "This field cannot be blank.")); // "This field cannot be blank."
+validate("", required(true, "This field cannot be blank."));
+// => "This field cannot be blank."
 
 // Error message can be templated to show the key and value.
 let schema = {
 	username: isString("Invalid value '{value}' for '{key}'.")
 };
+
 data = {
 	username: 1
 };
 
-validate(data, schema); // { username: "Invalid value '1' for 'username'." }
+validate(data, schema);
+// => { username: "Invalid value '1' for 'username'." }
 ```
 
 ## Custom validator
@@ -137,10 +146,12 @@ let isEmail = (value) => {
 };
 
 // invalid
-validate("invalid@email", isEmail); // Invalid email.
+validate("invalid@email", isEmail);
+// => Invalid email.
 
 // valid
-validate("valid@email.com", isEmail); // undefined
+validate("valid@email.com", isEmail);
+// => undefined
 ```
 
 ### Composing a validator
@@ -158,9 +169,11 @@ let minLength = (length, error) => {
 	};
 };
 
-validate("1234", minLength(5)); // It must be at least 5 characters long.
+validate("1234", minLength(5));
+// => It must be at least 5 characters long.
 
-validate("1234", minLength(5, "Its too short.")); // Its too short.
+validate("1234", minLength(5, "Its too short."));
+// => Its too short.
 ```
 
 ### Short curcuit validation
@@ -180,7 +193,8 @@ let required = (flag, error) => {
 };
 
 // invalid
-validate("", [required(false), isNumber]); // undefined
+validate("", [required(false), isNumber]);
+// => undefined
 ```
 
 ### Validate against rest of the data
@@ -208,7 +222,7 @@ let data = {
 };
 
 validate(data, schema);
-// output:
+// =>
 // { password: undefined,
 //   confirmPassword: "'confirmPassword' and 'password' do not match." }
 ```

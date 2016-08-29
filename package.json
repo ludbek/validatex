@@ -1,8 +1,8 @@
 {
   "name": "validate-x",
   "version": "0.1.0",
-  "description": "A validator.",
-  "main": "index.js",
+  "description": "A simple yet powerful data validator for javascript.",
+  "main": "lib/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register spec/*",
     "build": "babel --plugins transform-es2015-modules-commonjs src/ --out-dir lib/",
@@ -10,7 +10,6 @@
   },
   "files": [
     "src",
-    "index.js",
     "lib",
     "dist"
   ],
@@ -23,8 +22,9 @@
   },
   "homepage": "https://github.com/ludbek/validatex#readme",
   "keywords": [
-	  "validate",
-	  "validator"
+  	"validate",
+  	"validator",
+	"schema"
   ],
   "author": "ludbek",
   "license": "ISC",

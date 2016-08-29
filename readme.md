@@ -210,4 +210,3 @@ validate(data, schema);
 ```
 
 ## Validators
-

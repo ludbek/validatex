@@ -49,6 +49,10 @@ validate(data, signupSchema, true);
 //    [ "'confirmPassword' and 'password' do not match.",
 //      "'confirmPassword' must be at least 8 digits long." ] }
 ```
+## Syntax
+```javascript
+validate(data, schema, multipleError?)
+```
 
 ## Validate single data
 Single piece of data can be validated against single or multiple validators
@@ -210,3 +214,102 @@ validate(data, schema);
 ```
 
 ## Validators
+Unlike validators in other libraries these validators must be used with the `validate` function.
+
+### isBoolean
+Checks if a value is a boolean.
+
+```javascript
+isBoolean(customError?)
+```
+
+### isNumber
+Checks if a value is a number.
+
+```javascript
+isNumber(customError?)
+```
+
+### isString
+Checks if a value is a string.
+
+```javascript
+isString(customError?)
+```
+
+### isFunction
+Checks if a value is a function.
+
+```javascript
+isFunction(customError?)
+```
+
+### isObject
+Checks if a value is an object.
+
+```javascript
+isObject(customError?)
+```
+
+### isArray
+Checks if a value is an array.
+
+```javascript
+isArray(customError?)
+```
+
+### isEmail
+Checks if a value is an email.
+
+```javascript
+isEmail()
+```
+
+### required
+Checks if a value exists.
+
+```javascript
+required(true|false, customError?)
+```
+
+### oneOf
+Checks if a value is one of the given items.
+
+```javascript
+oneOf([...items], customError?)
+```
+
+### noneOf
+Checks if a value is none of the given items.
+
+```javascript
+noneOf([...items], customError?);
+```
+
+### equalsTo
+Makes sure if a value matches another value.
+
+```javascript
+equalsTo(key, customError?)
+```
+
+### length
+Checks lenght of a value.
+
+```javascript
+length(size, customError?)
+```
+
+### minLength
+Checks if a value's length is within the minimum length.
+
+```javascript
+minLength(size, customError?)
+```
+
+### maxLength
+Checks if a value's length is within the maximum length.
+
+```javascript
+maxLength(size, customError?)
+```

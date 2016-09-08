@@ -72,7 +72,6 @@ describe("validate", () => {
 		expect(error).to.not.exist;
 	});
 
-
 	it("validates non object data", () => {
 		let error = validate("a", isNumber());
 		expect(error).to.eql("'a' is not a valid number.");
@@ -149,6 +148,10 @@ describe("validate", () => {
 		let data = {"password": "a", "confirmPassword": "b"};
 		let error = validate(data, schema);
 		expect(error.password).to.not.exist;
+	});
+
+	it("returns 'undefined' if validator is absent", () => {
+		expect(validate("data")).to.not.exist;
 	});
 });
 

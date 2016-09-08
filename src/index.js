@@ -29,6 +29,8 @@ export const validateSingle = (data, validators, multipleErrors, all, key) => {
 
 
 export const validate = (data, validators, multipleErrors) => {
+	if (!validators) return;
+
 	let errors = {};
 	let noError = true;
 
@@ -107,14 +109,7 @@ export const isArray = (error) => {
 
 export const oneOf = (list, error) => {
 	return (value) => {
-		let hasAMatch = false;
-		for(let i = 0; i < list.length; i ++) {
-			if (list[i] === value) {
-				hasAMatch = true;
-			}
-		}
-		
-		if (!hasAMatch) {
+		if (list.indexOf(value) === -1) {
 			throw new ValidationError(error || "'{value}' does not fall under the given list.");
 		}
 	};

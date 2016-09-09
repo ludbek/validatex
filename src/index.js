@@ -200,7 +200,23 @@ export const within = (list, error) => {
 	};
 }
 
-export const excludes = () => {
+export const excludes = (list, error) => {
+	return (value) => {
+		if (!(value instanceof Array)) {
+			value = [value];
+		}
 
+		let odds = [];
+
+		for(let index = 0; index < value.length; index++) {
+			if (list.indexOf(value[index]) !== -1) {
+				odds.push(value[index]);
+			}
+		}
+
+		if (odds.length > 0) {
+			throw new ValidationError(error || `[${odds}] fall under restricted values.`);
+		}
+	};
 }
 

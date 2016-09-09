@@ -15,6 +15,7 @@ import {validate,
 		maxLength,
 		isBoolean,
 		within,
+		excludes,
 		isFunction} from "../src/index.js";
 import {expect} from "chai";
 
@@ -569,12 +570,12 @@ describe("isBoolean", () => {
 	});
 });
 
-describe.only("within", () => {
+describe("within", () => {
 	it("works with single item.", () => {
 		expect(within([1,2])(1)).to.not.exist;
 
 		try {
-			expect(within([1,2])(3))
+			within([1,2])(3);
 		}
 		catch (err) {
 			expect(err.message).to.equal("[3] do not fall under the allowed list.");
@@ -585,7 +586,7 @@ describe.only("within", () => {
 		expect(within([1,2,3])([2,3])).to.not.exist;
 
 		try {
-			expect(within([1,2,3])([2,4,5]))
+			within([1,2,3])([2,4,5]);
 		}
 		catch (err) {
 			expect(err.message).to.equal("[4,5] do not fall under the allowed list.");
@@ -595,5 +596,28 @@ describe.only("within", () => {
 
 	it("accepts custom error.", () => {
 		expect(validate([1,4,5], within([1,2,3], "Invalid values."))).to.equal("Invalid values.");
+	});
+});
+
+describe("excludes", () => {
+	it("works with single item.", () => {
+		let got = validate(3, excludes([1,2]));
+		expect(got).to.not.exist;
+
+		got = validate(1, excludes([1,2]));
+		expect(got).to.equal("[1] fall under restricted values.");
+	});
+
+	it("works with multiple items.", () => {
+		let got = validate([4,5], excludes([1,2,3]));
+		expect(got).to.not.exist;
+
+		got = validate([2,3,5], excludes([1,2,3]));
+		expect(got).to.equal("[2,3] fall under restricted values.");
+	});
+
+	it("accepts custom error.", () => {
+		let got = validate(3, excludes([1,2,3], "Invalid values."));
+		expect(got).to.equal("Invalid values.");
 	});
 });

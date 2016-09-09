@@ -108,6 +108,7 @@ export const isArray = (error) => {
 };
 
 export const oneOf = (list, error) => {
+	console.log("Warning: 'oneOf' has been deprecated, please use 'within' instead.");
 	return (value) => {
 		if (list.indexOf(value) === -1) {
 			throw new ValidationError(error || "'{value}' does not fall under the given list.");
@@ -116,6 +117,7 @@ export const oneOf = (list, error) => {
 };
 
 export const noneOf = (list, error) => {
+	console.log("Warning: 'noneOf' has been deprecated, please use 'excludes' instead.");
 	return (value) => {
 		for(let i = 0; i < list.length; i ++) {
 			if (list[i] === value) {
@@ -177,3 +179,28 @@ export const isBoolean = (error) => {
 		}
 	};
 };
+
+export const within = (list, error) => {
+	return (value) => {
+		if (!(value instanceof Array)) {
+			value = [value];
+		}
+
+		let odds = [];
+
+		for(let index = 0; index < value.length; index++) {
+			if (list.indexOf(value[index]) === -1) {
+				odds.push(value[index]);
+			}
+		}
+
+		if (odds.length > 0) {
+			throw new ValidationError(error || `[${odds}] do not fall under the allowed list.`);
+		}
+	};
+}
+
+export const excludes = () => {
+
+}
+

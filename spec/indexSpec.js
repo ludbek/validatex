@@ -14,6 +14,7 @@ import {validate,
 		minLength,
 		maxLength,
 		isBoolean,
+		within,
 		isFunction} from "../src/index.js";
 import {expect} from "chai";
 
@@ -568,4 +569,20 @@ describe("isBoolean", () => {
 	});
 });
 
+describe.only("within", () => {
+	it("works with single item.", () => {
+		expect(validate(1, within([1,2]))).to.not.exist;
 
+		expect(validate(3, within([1,2]))).to.equal("[3] do not fall under the allowed list.");
+	});
+
+	it("works with multiple items.", () => {
+		expect(validate([1,2], within([1,2,3]))).to.not.exist;
+
+		expect(validate([1,4,5], within([1,2,3]))).to.equal("[4,5] do not fall under the allowed list.");
+	});
+
+	it("accepts custom error.", () => {
+		expect(validate([1,4,5], within([1,2,3], "Invalid values."))).to.equal("Invalid values.");
+	});
+});

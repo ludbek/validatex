@@ -175,7 +175,7 @@ export const maxLength = (length, error) => {
 export const isBoolean = (error) => {
 	return (value) => {
 		if (value !== true && value !== false) {
-			throw Error(error || "Invalid boolean value.");
+			throw new ValidationError(error || "Invalid boolean value.");
 		}
 	};
 };

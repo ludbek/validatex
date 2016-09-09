@@ -572,30 +572,24 @@ describe("isBoolean", () => {
 
 describe("within", () => {
 	it("works with single item.", () => {
-		expect(within([1,2])(1)).to.not.exist;
+		let got = validate(1, within([1,2]));
+		expect(got).to.not.exist;
 
-		try {
-			within([1,2])(3);
-		}
-		catch (err) {
-			expect(err.message).to.equal("[3] do not fall under the allowed list.");
-		}
+		got = validate(3, within([1,2]));
+		expect(got).to.equal("[3] do not fall under the allowed list.");
 	});
 
 	it("works with multiple items.", () => {
-		expect(within([1,2,3])([2,3])).to.not.exist;
+		let got = validate([2,3], within([1,2,3]));
+		expect(got).to.not.exist;
 
-		try {
-			within([1,2,3])([2,4,5]);
-		}
-		catch (err) {
-			expect(err.message).to.equal("[4,5] do not fall under the allowed list.");
-
-		}
+		got = validate([2,4,5], within([1,2,3]));
+		expect(got).to.equal("[4,5] do not fall under the allowed list.");
 	});
 
 	it("accepts custom error.", () => {
-		expect(validate([1,4,5], within([1,2,3], "Invalid values."))).to.equal("Invalid values.");
+		let got = validate([1,4,5], within([1,2,3], "Invalid values."));
+		expect(got).to.equal("Invalid values.");
 	});
 });
 

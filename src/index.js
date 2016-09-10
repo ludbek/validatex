@@ -220,3 +220,10 @@ export const excludes = (list, error) => {
 	};
 }
 
+export const pattern = (regex, error) => {
+	return (value) => {
+		if(!regex.test(value)) {
+			throw new ValidationError(error || "'{value}' does not match with the pattern.");
+		}
+	};
+};

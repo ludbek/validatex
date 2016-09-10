@@ -287,6 +287,7 @@ required(true|false, customError?)
 ```
 
 ### oneOf
+`Deprecated: use 'within' instead`
 Checks if a value is one of the given items.
 
 ```javascript
@@ -294,6 +295,7 @@ oneOf([...items], customError?)
 ```
 
 ### noneOf
+`Deprecated: use 'excludes' instead`
 Checks if a value is none of the given items.
 
 ```javascript
@@ -326,4 +328,25 @@ Checks if a value's length is within the maximum length.
 
 ```javascript
 maxLength(size, customError?)
+```
+
+### within
+Checks if a value or list of values fall under a given list.
+
+```javascript
+within(list, customError?)
+```
+
+### excludes
+Checks if a value or list of values do not fall under a given list.
+
+```javascript
+excludes(list, customError?)
+```
+
+### pattern
+Checks if a value is in the given pattern.
+
+```javascript
+pattern(regex, customError?)
 ```

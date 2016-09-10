@@ -16,6 +16,7 @@ import {validate,
 		isBoolean,
 		within,
 		excludes,
+		pattern,
 		isFunction} from "../src/index.js";
 import {expect} from "chai";
 
@@ -512,7 +513,7 @@ describe("minLength", () => {
 	});
 });
 
-describe("minLength", () => {
+describe("maxLength", () => {
 	it("exists", () => {
 		expect(maxLength).to.exist;
 	});
@@ -613,5 +614,33 @@ describe("excludes", () => {
 	it("accepts custom error.", () => {
 		let got = validate(3, excludes([1,2,3], "Invalid values."));
 		expect(got).to.equal("Invalid values.");
+	});
+});
+
+describe("pattern", () => {
+	it("exists", () => {
+		expect(pattern).to.exist;
+	});
+
+	it("throws if data do not match the pattern.", () => {
+		try {
+			pattern(/\d{2}/)("1");
+		}
+		catch (err) {
+			expect(err.message).to.equal("'{value}' does not match with the pattern.");
+		}
+	});
+
+	it("return undefined if data match the pattern.", () => {
+		expect(pattern(/\d{2}/)("11")).to.not.exist;
+	});
+
+	it("accepts custom error.", () => {
+		try {
+			pattern(/\d{2}/, "Invalid data.")("1");
+		}
+		catch (err) {
+			expect(err.message).to.equal("Invalid data.");
+		}
 	});
 });

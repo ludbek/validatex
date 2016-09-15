@@ -56,11 +56,15 @@ export const validate = (data, validators, multipleErrors) => {
 
 
 export const required = (flag, error) => {
+	function isNullLike(value) {
+		return value === undefined || value === "" || value === null;
+	}
+
 	return (value) => {
-		if (flag && !value) {
+		if (flag && isNullLike(value)) {
 			throw new ValidationError(error || "This field is required.");
 		}
-		else if (!flag && !value) {
+		else if (!flag && isNullLike(value)) {
 			// skip rest of the validators
 			return false;
 		}

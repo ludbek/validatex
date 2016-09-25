@@ -1,5 +1,5 @@
-export const ValidationError = function (message) {
-	this.name = "ValidationError";
+export const SkipValidation = function (message) {
+	this.name = "SkipValidation";
 	this.message = message;
 };
 
@@ -12,12 +12,14 @@ export const validateSingle = (data, validators, multipleErrors, all, key) => {
 
 	for(let i = 0; i < validators.length; i++) {
 		try {
-			let cont = validators[i](data, all);
-			if (cont === false) break;
+			let error = validators[i](data, all);
+			if (typeof error === "string") {
+				errors.push(error.replace("{value}", data).replace("{key}", key));
+			}
 		}
 		catch (err) {
-			if (err instanceof ValidationError) {
-				errors.push(err.message.replace("{value}", data).replace("{key}", key));
+			if (err instanceof SkipValidation) {
+				break;
 			}
 		}
 	}
@@ -62,11 +64,11 @@ export const required = (flag, error) => {
 
 	return (value) => {
 		if (flag && isNullLike(value)) {
-			throw new ValidationError(error || "This field is required.");
+			return error || "This field is required.";
 		}
 		else if (!flag && isNullLike(value)) {
 			// skip rest of the validators
-			return false;
+			throw new SkipValidation();
 		}
 	}
 };
@@ -74,10 +76,11 @@ export const required = (flag, error) => {
 export const isNumber = (error) => {
 	return (value) => {
 		if (typeof value !== "number" || isNaN(value)) {
-			throw new ValidationError(error || "'{value}' is not a valid number.");
+			return error || "'{value}' is not a valid number.";
 		}
 	};
 };
+
 
 export const isString = (error) => {
 	return (value) => {
@@ -87,6 +90,7 @@ export const isString = (error) => {
 	};
 };
 
+
 export const isFunction = (error) => {
 	return (value) => {
 		if (typeof value !== "function") {
@@ -94,6 +98,7 @@ export const isFunction = (error) => {
 		}
 	}
 };
+
 
 export const isObject = (error) => {
 	return (value) => {
@@ -103,6 +108,7 @@ export const isObject = (error) => {
 	};
 };
 
+
 export const isArray = (error) => {
 	return (value) => {
 		if (Object.prototype.toString.call(value) !== "[object Array]") {
@@ -111,34 +117,16 @@ export const isArray = (error) => {
 	}
 };
 
-export const oneOf = (list, error) => {
-	console.log("Warning: 'oneOf' has been deprecated, please use 'within' instead.");
-	return (value) => {
-		if (list.indexOf(value) === -1) {
-			throw new ValidationError(error || "'{value}' does not fall under the given list.");
-		}
-	};
-};
-
-export const noneOf = (list, error) => {
-	console.log("Warning: 'noneOf' has been deprecated, please use 'excludes' instead.");
-	return (value) => {
-		for(let i = 0; i < list.length; i ++) {
-			if (list[i] === value) {
-				throw new ValidationError(error || "'{value}' is not allowed.");
-			}
-		}
-	};
-};
 
 export const length = (length, error) => {
 	return (value) => {
 		let str = value + "";
 		if (str.length !== length) {
-			throw new ValidationError(error || `It must be ${length} characters long.`);
+			return error || `It must be ${length} characters long.`;
 		}
 	};
 };
+
 
 export const isEmail = (error) => {
 	return (value) => {
@@ -149,6 +137,7 @@ export const isEmail = (error) => {
 	};
 };
 
+
 export const equalsTo = (key, error) => {
 	return (value, all) => {
 		if (value !== all[key]) {
@@ -156,6 +145,7 @@ export const equalsTo = (key, error) => {
 		}
 	}
 }; 
+
 
 export const minLength = (length, error) => {
 	return (value) => {
@@ -165,6 +155,7 @@ export const minLength = (length, error) => {
 		}
 	};
 };
+
 
 export const maxLength = (length, error) => {
 	return (value) => {

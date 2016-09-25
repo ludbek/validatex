@@ -8,14 +8,22 @@ A simple yet powerful data validator for javascript.
 ### Bower
 `bower install validatex`
 
+
+## Updates
+- 0.3.x [breaking changes]
+
+	- validators should `return error messages instead of throwing them with ValidationError`
+	- validators should `throw SkipValidation` instead of returning false` for short curcuiting
+	- `oneOf` and `noneOf` are gone, please use `within` and `excludes` instead
+
 ## Quick walk through
 ```javascript
-import {validate, ValidationError, minLength, required, equalsTo} from "validatex";
+import {validate, SkipValidation, minLength, required, equalsTo} from "validatex";
 
 // custom validator
 let isUsername = (value) => {
 	if (!/^[a-z0-9]{4,}$/.test(value)) {
-		throw new ValidationError("Invalid username.");
+		return "Invalid username.";
 	}
 }
 
@@ -135,13 +143,13 @@ validate(data, schema);
 ```
 
 ## Custom validator
-A validator is a normal function which must throw error if data is invalid.  It must return `undefined` if data is valid.
+A validator is a normal function which must return error if data is invalid.  It must return `undefined` if data is valid.
 Lets create a naive email validator.
 
 ```javascript
 let isEmail = (value) => {
 	if (!/.+@.+\..+/.test(value)) {
-		throw new ValidationError("Invalid email.");
+		return "Invalid email.";
 	}
 };
 
@@ -164,7 +172,7 @@ let minLength = (length, error) => {
 	// return actual validator
 	return (value) => {
 		if (value.length < length) {
-			throw new ValidationError(error || `It must be at least ${length} characters long.`);
+			return error || `It must be at least ${length} characters long.`;
 		}
 	};
 };
@@ -177,17 +185,19 @@ validate("1234", minLength(5, "Its too short."));
 ```
 
 ### Short curcuit validation
-A validator can return `false` to skip rest of the validation. This is how `required` validator works.
+A validator can throw `SkipValidation` to skip rest of the validation.
+This is how `required` validator works.
 
 ```javascript
 let required = (flag, error) => {
 	return (value) => {
 		if (flag && !value) {
-			throw new ValidationError(error || "This field is required.");
+			return error || "This field is required.";
 		}
 		else if (!flag && !value) {
 			// skip rest of the validators
-			return false;
+			// do not forget the new keyword
+			throw new SkipValidation();
 		}
 	}
 };
@@ -206,7 +216,7 @@ let equalsTo = (key, error) => {
 	// 'all' is entire data being validated
 	return (value, all) => {
 		if (value !== all[key]) {
-			throw new ValidationError(error || `'{key}' and '${key}' do not match.`);
+			return error || `'{key}' and '${key}' do not match.`;
 		}
 	}
 }; 
@@ -285,23 +295,6 @@ Checks if a value exists.
 ```javascript
 required(true|false, customError?)
 ```
-
-### oneOf
-`Deprecated: use 'within' instead`
-Checks if a value is one of the given items.
-
-```javascript
-oneOf([...items], customError?)
-```
-
-### noneOf
-`Deprecated: use 'excludes' instead`
-Checks if a value is none of the given items.
-
-```javascript
-noneOf([...items], customError?);
-```
-
 ### equalsTo
 Makes sure if a value matches another value.
 

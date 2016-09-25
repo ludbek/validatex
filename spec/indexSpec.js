@@ -25,7 +25,7 @@ let isInvalid = () => {
 	return "{key}: invalid value {value}";
 }
 
-describe.only("validateSingle", () => {
+describe("validateSingle", () => {
 	it("works with single validator.", () => {
 		let error = validate(1, isNumber());
 		expect(error).to.equal(undefined);
@@ -163,18 +163,18 @@ describe("required", () => {
 		expect(required).to.exist;
 	});
 
-	it("returns false if not required and  data is null.", () => {
-		expect(required(false)()).to.equal(false);
-		expect(required(false)("")).to.equal(false);
-		expect(required(false)(null)).to.equal(false);
+	it("throws SkipValidation exception if not required and  data is null.", () => {
+		expect(required(false).bind(null)).to.throw(SkipValidation);
+		expect(required(false).bind(null, "")).to.throw(SkipValidation);
+		expect(required(false).bind(null, null)).to.throw(SkipValidation);
 	});
 
 	it("returns undefined if not required and data is not null", () => {
 		expect(required(false)("adata")).to.not.exist;
 	});
 
-	it("raises exception if required and data is null ", () => {
-		expect(required(true).bind(null)).to.throw(ValidationError);
+	it("returns error if required and data is null ", () => {
+		expect(required(true)(null)).to.equal("This field is required.");
 	});
 
 	it("returns undefined if required and data is not null", () => {

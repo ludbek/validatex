@@ -85,7 +85,7 @@ export const isNumber = (error) => {
 export const isString = (error) => {
 	return (value) => {
 		if (typeof value !== "string") {
-			throw new ValidationError(error || "'{value}' is not a valid string.");
+			return error || "'{value}' is not a valid string.";
 		}
 	};
 };
@@ -94,7 +94,7 @@ export const isString = (error) => {
 export const isFunction = (error) => {
 	return (value) => {
 		if (typeof value !== "function") {
-			throw new ValidationError(error || "Expected a function.");
+			return error || "Expected a function.";
 		}
 	}
 };
@@ -103,7 +103,7 @@ export const isFunction = (error) => {
 export const isObject = (error) => {
 	return (value) => {
 		if (value !== Object(value)) {
-			throw new ValidationError(error || "Expected an object.");
+			return error || "Expected an object.";
 		}
 	};
 };
@@ -112,7 +112,7 @@ export const isObject = (error) => {
 export const isArray = (error) => {
 	return (value) => {
 		if (Object.prototype.toString.call(value) !== "[object Array]") {
-			throw new ValidationError(error || "Expected an array.");
+			return error || "Expected an array.";
 		}
 	}
 };
@@ -132,7 +132,7 @@ export const isEmail = (error) => {
 	return (value) => {
 		let pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 		if (!pattern.test(value)) {
-			throw new ValidationError(error || "Invalid email id.");
+			return error || "Invalid email id.";
 		}
 	};
 };
@@ -141,7 +141,7 @@ export const isEmail = (error) => {
 export const equalsTo = (key, error) => {
 	return (value, all) => {
 		if (value !== all[key]) {
-			throw new ValidationError(error || `'{key}' and '${key}' do not match.`);
+			return error || `'{key}' and '${key}' do not match.`;
 		}
 	}
 }; 
@@ -151,7 +151,7 @@ export const minLength = (length, error) => {
 	return (value) => {
 		let str = value + "";
 		if (str.length < length) {
-			throw new ValidationError(error || `It must be at least ${length} characters long.`);
+			return error || `It must be at least ${length} characters long.`;
 		}
 	};
 };
@@ -161,7 +161,7 @@ export const maxLength = (length, error) => {
 	return (value) => {
 		let str = value + "";
 		if (str.length > length) {
-			throw new ValidationError(error || `It must be at most ${length} characters long.`);
+			return error || `It must be at most ${length} characters long.`;
 		}
 	};
 };
@@ -170,7 +170,7 @@ export const maxLength = (length, error) => {
 export const isBoolean = (error) => {
 	return (value) => {
 		if (value !== true && value !== false) {
-			throw new ValidationError(error || "Invalid boolean value.");
+			return error || "Invalid boolean value.";
 		}
 	};
 };
@@ -190,7 +190,7 @@ export const within = (list, error) => {
 		}
 
 		if (odds.length > 0) {
-			throw new ValidationError(error || `[${odds}] do not fall under the allowed list.`);
+			return error || `[${odds}] do not fall under the allowed list.`;
 		}
 	};
 }
@@ -210,7 +210,7 @@ export const excludes = (list, error) => {
 		}
 
 		if (odds.length > 0) {
-			throw new ValidationError(error || `[${odds}] fall under restricted values.`);
+			return error || `[${odds}] fall under restricted values.`;
 		}
 	};
 }
@@ -218,7 +218,7 @@ export const excludes = (list, error) => {
 export const pattern = (regex, error) => {
 	return (value) => {
 		if(!regex.test(value)) {
-			throw new ValidationError(error || "'{value}' does not match with the pattern.");
+			return error || "'{value}' does not match with the pattern.";
 		}
 	};
 };

@@ -28,7 +28,7 @@ let isInvalid = () => {
 describe("validateSingle", () => {
 	it("works with single validator.", () => {
 		let error = validate(1, isNumber());
-		expect(error).to.equal(undefined);
+		expect(error).to.equal(null);
 
 		error = validate("string", isNumber());
 		expect(error).to.equal("'string' is not a valid number.");
@@ -36,7 +36,7 @@ describe("validateSingle", () => {
 
 	it("works with multiple validators.", () => {
 		let error = validate(9876543210, [isNumber(), length(10)]);
-		expect(error).to.equal(undefined);
+		expect(error).to.equal(null);
 
 
 		error = validate(1, [isNumber(), length(10)]);
@@ -55,12 +55,12 @@ describe("validateSingle", () => {
 
 	it("returns empty error.", () => {
 		let error = validate(9876543210, [isNumber(), length(10)], true);
-		expect(error).to.eql([]);
+		expect(error).to.eql(null);
 	});
 
 	it("short curcuits if one of the validator returns false.", () => {
 		let error = validate("", [required(false), isNumber()]);
-		expect(error).to.eql(undefined);
+		expect(error).to.eql(null);
 	});
 
 	it("includes key and value to error template.", () => {
@@ -86,7 +86,7 @@ describe("validate", () => {
 		expect(error).to.eql("It must be 10 characters long.");
 
 		error = validate(1234567890, [isNumber(), length(10)]);
-		expect(error).to.equal(undefined);
+		expect(error).to.equal(null);
 	});
 
 	it("validates object data", () => {

@@ -1,6 +1,6 @@
 {
   "name": "validatex",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "A simple yet powerful data validator for javascript.",
   "main": "lib/index.js",
   "scripts": {

@@ -71,7 +71,7 @@ validate(1, isString());
 // => '1' is not a valid string.
 
 validate("apple", isString());
-// => undefined
+// => null
 ```
 
 ### With multiple validators
@@ -107,7 +107,7 @@ let loginData = {
 };
 
 validate(loginData, loginSchema);
-// => { username: undefined, password: 'This field is required.' }
+// => { username: null, password: 'This field is required.' }
 ```
 
 ### Get multiple errors
@@ -159,7 +159,7 @@ validate("invalid@email", isEmail);
 
 // valid
 validate("valid@email.com", isEmail);
-// => undefined
+// => null
 ```
 
 ### Composing a validator
@@ -204,7 +204,7 @@ let required = (flag, error) => {
 
 // invalid
 validate("", [required(false), isNumber]);
-// => undefined
+// => null
 ```
 
 ### Validate against rest of the data
@@ -233,7 +233,7 @@ let data = {
 
 validate(data, schema);
 // =>
-// { password: undefined,
+// { password: null,
 //   confirmPassword: "'confirmPassword' and 'password' do not match." }
 ```
 

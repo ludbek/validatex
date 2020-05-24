@@ -14,19 +14,24 @@ export const validateSingle = (data, validators, multipleErrors, all, key) => {
 		try {
 			let error = validators[i](data, all);
 			if (typeof error === "string") {
-				errors.push(error.replace("{value}", data).replace("{key}", key));
+				const formattedError = error.replace("{value}", data).replace("{key}", key)
+				if (!multipleErrors) return formattedError;
+				errors.push(formattedError);
 			}
 		}
 		catch (err) {
 			if (err instanceof SkipValidation) {
 				break;
 			}
+			else {
+				throw err
+			}
 		}
 	}
-
-	if (multipleErrors === true) return errors;
 	
-	if (errors.length > 0) return errors[0];
+	if (errors.length > 0) return errors;
+
+	return null
 };
 
 
@@ -41,7 +46,7 @@ export const validate = (data, validators, multipleErrors) => {
 			if (validators.hasOwnProperty(prop)) {
 				let error = validateSingle(data[prop], validators[prop], multipleErrors, data, prop);
 
-				if (error !== undefined) {
+				if (error !== null) {
 					noError = false;
 				}
 
@@ -49,7 +54,7 @@ export const validate = (data, validators, multipleErrors) => {
 			}
 		}
 
-		return noError? undefined: errors;
+		return noError? null: errors;
 	}
 
 	errors = validateSingle(data, validators, multipleErrors);

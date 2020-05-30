@@ -64,7 +64,7 @@ export const validate = (data, validators, multipleErrors) => {
 
 export const required = (flag, error) => {
 	function isNullLike(value) {
-		return value === undefined || value === "" || value === null;
+		return [undefined, "", null, NaN].includes(value)
 	}
 
 	return (value) => {

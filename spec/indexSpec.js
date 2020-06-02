@@ -1,29 +1,193 @@
-import {validate,
-		validateSingle,
-		SkipValidation,
-		required,
-		isNumber,
-		isString,
-		equalsTo,
-		isEmail,
-		isArray,
-		isObject,
-		oneOf,
-		noneOf,
-		length,
-		minLength,
-		maxLength,
-		isBoolean,
-		within,
-		excludes,
-		pattern,
-		isFunction} from "../src/index.js";
+import {
+	validate,
+	validateSingle,
+	validateSingleAsync,
+	avalidate,
+	SkipValidation,
+	required,
+	isNumber,
+	isString,
+	equalsTo,
+	isEmail,
+	isArray,
+	isObject,
+	oneOf,
+	noneOf,
+	length,
+	minLength,
+	maxLength,
+	isBoolean,
+	within,
+	excludes,
+	pattern,
+	isFunction
+} from "../src/index.js";
 import {expect} from "chai";
 
 
 let isInvalid = () => {
 	return "{key}: invalid value {value}";
 }
+
+describe('validateSingleAsync', () => {
+	it('works with async validator', async () => {
+		async function validator () { return 'The value should not be 1' }
+		const error = await validateSingleAsync(1, validator);
+		expect(error).to.equal('The value should not be 1');
+	})
+
+	it('works with multiple async validators', async () => {
+		async function pass() {}
+		async function fail() {return 'Bazinga !!!'}
+		const error = await validateSingleAsync(1, [pass, fail])
+		expect(error).to.eql('Bazinga !!!')
+	})
+
+	it('works with async and sync validators', async () => {
+		async function pass() {}
+		function fail() {return 'Bazinga !!!'}
+		const error = await validateSingleAsync(1, [pass, fail])
+		expect(error).to.eql('Bazinga !!!')
+	})
+
+	it("works with single validator.", async () => {
+		let error = await validateSingleAsync(1, isNumber());
+		expect(error).to.equal(null);
+
+		error = await validateSingleAsync("string", isNumber());
+		expect(error).to.equal("'string' is not a valid number.");
+	});
+
+	it("works with multiple validators.", async () => {
+		let error = await validateSingleAsync(9876543210, [isNumber(), length(10)]);
+		expect(error).to.equal(null);
+
+
+		error = await validateSingleAsync(1, [isNumber(), length(10)]);
+		expect(error).to.equal("It must be 10 characters long.");
+	});
+
+	it("returns single error by default.", async () => {
+		const error = await validateSingleAsync("string", [isNumber(), length(10)]);
+		expect(error).to.equal("'string' is not a valid number.");
+	});
+
+	it("returns multiple errors.", async () => {
+		const error = await validateSingleAsync("string", [isNumber(), length(10)], true);
+		expect(error).to.eql(["'string' is not a valid number.", "It must be 10 characters long."]);
+	});
+
+	it("returns null even when multiple validators are present", async () => {
+		const error = await validateSingleAsync(9876543210, [isNumber(), length(10)], true);
+		expect(error).to.eql(null);
+	});
+
+	it("short curcuits if one of the validator returns false.", async  () => {
+		const error = await validateSingleAsync("", [required(false), isNumber()]);
+		expect(error).to.eql(null);
+	});
+
+	it("includes key and value to error template.", async () => {
+		const error = await validateSingleAsync("Lel", isInvalid, false, undefined, "name");
+		expect(error).to.eql("name: invalid value Lel");
+	});
+})
+
+describe("avalidate", () => {
+	it("complains if unknown fields are passed in strict mode", async () => {
+		const data = {fieldA: 1, fieldB: 2}
+		const schema = {fieldC: () => {}}
+		const error = await avalidate(data, schema)
+		expect(error).to.eql({
+			fieldA: 'This field is not allowed.',
+			fieldB: 'This field is not allowed.',
+		})
+	})
+
+	it('works with async validators', async () => {
+		async function fail() {return 'Bazinga !!!'}
+		async function pass() {}
+		const data = {fieldB: 'a data'}
+		const schema = {fieldA: [pass, fail], fieldB: [required(true), pass]}
+		const errors = await avalidate(data, schema)
+		expect(errors).to.eql({
+			fieldA: 'Bazinga !!!'
+		})
+	})
+
+	it("returns null if valid.", async () => {
+		const error = await avalidate({planet: "earth"}, {planet: [isString()]});
+		expect(error).to.eql(null)
+	});
+
+	it("validates object data", async () => {
+		let schema = {
+			"string": [isString(), length(2)],
+			"number": [isNumber(), length(2)]
+		};
+
+		let data = {};
+		let error = await avalidate(data, schema);
+		expect(error.string).to.eql("'undefined' is not a valid string.");
+		expect(error.number).to.eql("'undefined' is not a valid number.");
+
+
+		data = {string: "earth", number: 123};
+		error = await avalidate(data, schema);
+		expect(error.string).to.eql("It must be 2 characters long.");
+		expect(error.number).to.eql("It must be 2 characters long.");
+
+
+		data = {string: "ab", number: 12};
+		error = await avalidate(data, schema);
+		expect(error).to.not.exist;
+	});
+
+	it("returns multiple errors", async () => {
+		const schema = {
+			"string": [isString(), length(2)],
+			"number": [isNumber(), length(2)]
+		};
+
+		const data = {};
+		const error = await avalidate(data, schema, {multipleErrors: true});
+		expect(error.string).to.eql([
+			"'undefined' is not a valid string.",
+			"It must be 2 characters long."
+		]);
+		expect(error.number).to.eql([
+			"'undefined' is not a valid number.",
+			"It must be 2 characters long."
+		]);
+	});
+
+	it("passes entire data to validator as second arg", async () => {
+		let schema = {
+			"password": [],
+			"confirmPassword": equalsTo("password")
+		};
+
+		let data = {"password": "a", "confirmPassword": "b"};
+		let error = await avalidate(data, schema);
+		expect(error.password).to.not.exist;
+		expect(error.confirmPassword).to.eql("'confirmPassword' and 'password' do not match.");
+
+		data.confirmPassword = "a";
+		error = await avalidate(data, schema);
+		expect(error).to.not.exist;
+	});
+
+	it("sets error of a key in composite data to 'undefined' if its valid.", async () => {
+		const schema = {
+			"password": required(true),
+			"confirmPassword": equalsTo("password")
+		};
+
+		const data = {"password": "a", "confirmPassword": "b"};
+		const error = await avalidate(data, schema);
+		expect(error.password).to.not.exist;
+	});
+});
 
 describe("validateSingle", () => {
 	it("works with single validator.", () => {

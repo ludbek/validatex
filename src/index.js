@@ -3,8 +3,12 @@ export const SkipValidation = function (message) {
 	this.message = message;
 };
 
+const formatError = (error, data, key) => {
+	return error.replace("{value}", data).replace("{key}", key)
+}
+
 export const validateSingle = (data, validators, multipleErrors, all, key) => {
-	let errors = [];
+	const errors = [];
 
 	if (typeof validators === "function") {
 		validators = [validators];
@@ -14,7 +18,7 @@ export const validateSingle = (data, validators, multipleErrors, all, key) => {
 		try {
 			let error = validators[i](data, all);
 			if (typeof error === "string") {
-				const formattedError = error.replace("{value}", data).replace("{key}", key)
+				const formattedError = formatError(error, data, key)
 				if (!multipleErrors) return formattedError;
 				errors.push(formattedError);
 			}
@@ -33,7 +37,6 @@ export const validateSingle = (data, validators, multipleErrors, all, key) => {
 
 	return null
 };
-
 
 export const validate = (data, validators, multipleErrors) => {
 	if (!validators) return;
@@ -60,6 +63,93 @@ export const validate = (data, validators, multipleErrors) => {
 	errors = validateSingle(data, validators, multipleErrors);
 	return errors
 };
+
+export const validateSingleAsync = (data, validators, multipleErrors, all, key) => {
+	if (typeof validators === "function") {
+		validators = [validators]
+	}
+
+	async function v (funcs, errors) {
+		if(errors.length > 0) {
+			if(!multipleErrors) return errors[0]
+		}
+
+		if(funcs.length === 0) {
+			return errors.length > 0 ? errors : null
+		}
+
+		try {
+			const currentValidator = funcs.shift()
+			const error = await currentValidator(data, all)
+			if(error) {
+				errors.push(formatError(error, data, key))
+			}
+			return v(funcs, errors)
+		}
+		catch (err) {
+			if (err instanceof SkipValidation) {
+				if(errors.length > 0) {
+					return multipleErrors? errors: errors[0]
+				}
+				return null
+			}
+			else {
+				throw err
+			}
+		}
+	}
+
+	return v([...validators], [])
+}
+
+function getInvalidKeys ({dataKeys, validKeys}) {
+	return dataKeys.filter(key => !validKeys.includes(key))
+}
+
+export const avalidate = (data, schema, options = {}) => {
+	data = data || {}
+	if(!schema) throw new Error("'schema' is required.")
+	const defaultOptions = {
+		multipleErrors: false,
+		partial: false,
+		strict: true,
+		invalidKeyError: 'This field is not allowed.'
+	}
+	options = {...defaultOptions, ...options}
+	const { multipleErrors, partial, strict, invalidKeyError } = options
+	const dataKeys = Object.keys(data)
+	const validKeys = Object.keys(schema)
+	if(strict) {
+		const invalidKeys = getInvalidKeys({dataKeys, validKeys})
+		if(invalidKeys.length > 0) {
+			return invalidKeys.reduce((a, key) => {
+				a[key] = invalidKeyError
+				return a
+			}, {})
+		}
+	}
+
+	async function v(keys, errors) {
+		if(keys.length === 0) {
+			return errors
+		}
+		const key = keys.shift()
+		const error = await validateSingleAsync(
+			data[key],
+			schema[key],
+			multipleErrors,
+			data,
+			key
+		)
+		if(error) {
+			errors = errors || {}
+			errors[key] = error
+		}
+		return v(keys, errors)
+	}
+
+	return v(validKeys, null)
+}
 
 
 export const required = (flag, error) => {

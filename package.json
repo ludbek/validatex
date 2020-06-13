@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha --require @babel/register spec/*",
-    "build": "babel --plugins transform-es2015-modules-commonjs src/ --out-dir lib/"
+    "build": "babel src/ --out-dir lib/",
+    "prepublish": "npm run test && npm run build"
   },
   "files": [
     "src",
@@ -28,6 +29,7 @@
   "author": "ludbek",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.10.1",
     "@babel/core": "^7.10.2",
     "@babel/preset-env": "^7.10.2",
     "@babel/register": "^7.10.1",

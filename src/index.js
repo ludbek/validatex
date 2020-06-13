@@ -64,7 +64,7 @@ export const validate = (data, validators, multipleErrors) => {
 	return errors
 };
 
-export const validateSingleAsync = (data, validators, multipleErrors, all, key) => {
+export const avalidateSingle = (data, validators, multipleErrors, all, key) => {
 	if (typeof validators === "function") {
 		validators = [validators]
 	}
@@ -106,19 +106,24 @@ function getInvalidKeys ({dataKeys, validKeys}) {
 	return dataKeys.filter(key => !validKeys.includes(key))
 }
 
+const defaultOptions = {
+	multipleErrors: false,
+	partial: false,
+	strict: true,
+	invalidKeyError: 'This field is not allowed.'
+}
+
 export const avalidate = (data, schema, options = {}) => {
 	data = data || {}
 	if(!schema) throw new Error("'schema' is required.")
-	const defaultOptions = {
-		multipleErrors: false,
-		partial: false,
-		strict: true,
-		invalidKeyError: 'This field is not allowed.'
-	}
 	options = {...defaultOptions, ...options}
 	const { multipleErrors, partial, strict, invalidKeyError } = options
 	const dataKeys = Object.keys(data)
-	const validKeys = Object.keys(schema)
+	let validKeys = Object.keys(schema)
+	if(partial) {
+		validKeys = validKeys.filter(key => dataKeys.includes(key))
+	}
+
 	if(strict) {
 		const invalidKeys = getInvalidKeys({dataKeys, validKeys})
 		if(invalidKeys.length > 0) {
@@ -134,7 +139,7 @@ export const avalidate = (data, schema, options = {}) => {
 			return errors
 		}
 		const key = keys.shift()
-		const error = await validateSingleAsync(
+		const error = await avalidateSingle(
 			data[key],
 			schema[key],
 			multipleErrors,

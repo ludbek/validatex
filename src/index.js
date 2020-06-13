@@ -38,32 +38,6 @@ export const validateSingle = (data, validators, multipleErrors, all, key) => {
 	return null
 };
 
-export const validate = (data, validators, multipleErrors) => {
-	if (!validators) return;
-
-	let errors = {};
-	let noError = true;
-
-	if (typeof validators === "object" && !validators.length) {
-		for (let prop in validators) {
-			if (validators.hasOwnProperty(prop)) {
-				let error = validateSingle(data[prop], validators[prop], multipleErrors, data, prop);
-
-				if (error !== null) {
-					noError = false;
-				}
-
-				errors[prop] = error;
-			}
-		}
-
-		return noError? null: errors;
-	}
-
-	errors = validateSingle(data, validators, multipleErrors);
-	return errors
-};
-
 export const avalidateSingle = (data, validators, multipleErrors, all, key) => {
 	if (typeof validators === "function") {
 		validators = [validators]
@@ -113,7 +87,7 @@ const defaultOptions = {
 	invalidKeyError: 'This field is not allowed.'
 }
 
-export const avalidate = (data, schema, options = {}) => {
+const _validate = (data, schema, options, v) => {
 	data = data || {}
 	if(!schema) throw new Error("'schema' is required.")
 	options = {...defaultOptions, ...options}
@@ -134,7 +108,34 @@ export const avalidate = (data, schema, options = {}) => {
 		}
 	}
 
-	async function v(keys, errors) {
+	return v(validKeys, null, data, schema, multipleErrors)
+}
+
+export const validate = (data, schema, options = {}) => {
+	function v(keys, errors, data, schema, multipleErrors) {
+		if(keys.length === 0) {
+			return errors
+		}
+		const key = keys.shift()
+		const error = validateSingle(
+			data[key],
+			schema[key],
+			multipleErrors,
+			data,
+			key
+		)
+		if(error) {
+			errors = errors || {}
+			errors[key] = error
+		}
+		return v(keys, errors, data, schema, multipleErrors)
+	}
+
+	return _validate(data, schema, options, v)
+}
+
+export const avalidate = (data, schema, options = {}) => {
+	async function v(keys, errors, data, schema, multipleErrors) {
 		if(keys.length === 0) {
 			return errors
 		}
@@ -150,10 +151,10 @@ export const avalidate = (data, schema, options = {}) => {
 			errors = errors || {}
 			errors[key] = error
 		}
-		return v(keys, errors)
+		return v(keys, errors, data, schema, multipleErrors)
 	}
 
-	return v(validKeys, null)
+	return _validate(data, schema, options, v)
 }
 
 

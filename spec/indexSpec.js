@@ -208,39 +208,39 @@ describe("avalidate", () => {
 
 describe("validateSingle", () => {
 	it("works with single validator.", () => {
-		let error = validate(1, isNumber());
+		let error = validateSingle(1, isNumber());
 		expect(error).to.equal(null);
 
-		error = validate("string", isNumber());
+		error = validateSingle("string", isNumber());
 		expect(error).to.equal("'string' is not a valid number.");
 	});
 
 	it("works with multiple validators.", () => {
-		let error = validate(9876543210, [isNumber(), length(10)]);
+		let error = validateSingle(9876543210, [isNumber(), length(10)]);
 		expect(error).to.equal(null);
 
 
-		error = validate(1, [isNumber(), length(10)]);
+		error = validateSingle(1, [isNumber(), length(10)]);
 		expect(error).to.equal("It must be 10 characters long.");
 	});
 
 	it("returns single error by default.", () => {
-		let error = validate("string", [isNumber(), length(10)]);
+		let error = validateSingle("string", [isNumber(), length(10)]);
 		expect(error).to.equal("'string' is not a valid number.");
 	});
 
 	it("returns multiple errors.", () => {
-		let error = validate("string", [isNumber(), length(10)], true);
+		let error = validateSingle("string", [isNumber(), length(10)], true);
 		expect(error).to.eql(["'string' is not a valid number.", "It must be 10 characters long."]);
 	});
 
 	it("returns empty error.", () => {
-		let error = validate(9876543210, [isNumber(), length(10)], true);
+		let error = validateSingle(9876543210, [isNumber(), length(10)], true);
 		expect(error).to.eql(null);
 	});
 
 	it("short curcuits if one of the validator returns false.", () => {
-		let error = validate("", [required(false), isNumber()]);
+		let error = validateSingle("", [required(false), isNumber()]);
 		expect(error).to.eql(null);
 	});
 
@@ -283,20 +283,6 @@ describe("validate", () => {
 		expect(error).to.not.exist;
 	});
 
-	it("validates non object data", () => {
-		let error = validate("a", isNumber());
-		expect(error).to.eql("'a' is not a valid number.");
-
-		error = validate("string", [isNumber(), length(10)]);
-		expect(error).to.eql("'string' is not a valid number.");
-
-		error = validate(12, [isNumber(), length(10)]);
-		expect(error).to.eql("It must be 10 characters long.");
-
-		error = validate(1234567890, [isNumber(), length(10)]);
-		expect(error).to.equal(null);
-	});
-
 	it("validates object data", () => {
 		let schema = {
 			"string": [isString(), length(2)],
@@ -327,7 +313,7 @@ describe("validate", () => {
 		};
 
 		let data = {};
-		let error = validate(data, schema, true);
+		let error = validate(data, schema, {multipleErrors: true});
 		expect(error.string).to.eql(
 				["'undefined' is not a valid string.", "It must be 2 characters long."]);
 		expect(error.number).to.eql(
@@ -359,10 +345,6 @@ describe("validate", () => {
 		let data = {"password": "a", "confirmPassword": "b"};
 		let error = validate(data, schema);
 		expect(error.password).to.not.exist;
-	});
-
-	it("returns 'undefined' if validator is absent", () => {
-		expect(validate("data")).to.not.exist;
 	});
 });
 
@@ -725,46 +707,46 @@ describe("isBoolean", () => {
 
 describe("within", () => {
 	it("works with single item.", () => {
-		let got = validate(1, within([1,2]));
+		let got = validateSingle(1, within([1,2]));
 		expect(got).to.not.exist;
 
-		got = validate(3, within([1,2]));
+		got = validateSingle(3, within([1,2]));
 		expect(got).to.equal("[3] do not fall under the allowed list.");
 	});
 
 	it("works with multiple items.", () => {
-		let got = validate([2,3], within([1,2,3]));
+		let got = validateSingle([2,3], within([1,2,3]));
 		expect(got).to.not.exist;
 
-		got = validate([2,4,5], within([1,2,3]));
+		got = validateSingle([2,4,5], within([1,2,3]));
 		expect(got).to.equal("[4,5] do not fall under the allowed list.");
 	});
 
 	it("accepts custom error.", () => {
-		let got = validate([1,4,5], within([1,2,3], "Invalid values."));
+		let got = validateSingle([1,4,5], within([1,2,3], "Invalid values."));
 		expect(got).to.equal("Invalid values.");
 	});
 });
 
 describe("excludes", () => {
 	it("works with single item.", () => {
-		let got = validate(3, excludes([1,2]));
+		let got = validateSingle(3, excludes([1,2]));
 		expect(got).to.not.exist;
 
-		got = validate(1, excludes([1,2]));
+		got = validateSingle(1, excludes([1,2]));
 		expect(got).to.equal("[1] fall under restricted values.");
 	});
 
 	it("works with multiple items.", () => {
-		let got = validate([4,5], excludes([1,2,3]));
+		let got = validateSingle([4,5], excludes([1,2,3]));
 		expect(got).to.not.exist;
 
-		got = validate([2,3,5], excludes([1,2,3]));
+		got = validateSingle([2,3,5], excludes([1,2,3]));
 		expect(got).to.equal("[2,3] fall under restricted values.");
 	});
 
 	it("accepts custom error.", () => {
-		let got = validate(3, excludes([1,2,3], "Invalid values."));
+		let got = validateSingle(3, excludes([1,2,3], "Invalid values."));
 		expect(got).to.equal("Invalid values.");
 	});
 });

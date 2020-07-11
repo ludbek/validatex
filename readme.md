@@ -1,24 +1,19 @@
 # Introduction
 A simple yet powerful data validator for javascript.
 
+## Features
+- functions as validators
+- supports both sync and async validators
+- partial and strict validations for apis
+- support for custom error message (e.g. i18n)
+
 ## Installation
 ### NPM
 `npm install validatex`
 
-### Bower
-`bower install validatex`
-
-
-## Updates
-- 0.3.x [breaking changes]
-
-	- validators should `return error messages instead of throwing them with ValidationError`
-	- validators should `throw SkipValidation` instead of returning false` for short curcuiting
-	- `oneOf` and `noneOf` are gone, please use `within` and `excludes` instead
-
 ## Quick walk through
 ```javascript
-import {validate, SkipValidation, minLength, required, equalsTo} from "validatex";
+import {validate, avalidate, SkipValidation, minLength, required, equalsTo} from "validatex";
 
 // custom validator
 let isUsername = (value) => {
@@ -48,101 +43,93 @@ validate(data, signupSchema);
 //   password: "'password' must be at least 8 digits long.",
 //   confirmPassword: "'confirmPassword' and 'password' do not match." }
 
-// get multiple errors
-validate(data, signupSchema, true);
+// async validation
+await avalidate(data, signupSchema)
+// => [Promise]
+```
+
+## Sync validation
+```
+validate(data, schema, options?)
+```
+
+Default options
+```
+const defaultOptions = {
+	multipleErrors: false,
+	partial: false,
+	strict: true,
+	invalidKeyError: 'This field is not allowed.'
+}
+```
+
+### Validate multiple errors
+We can get multiple errors if we set `multipleErrors` to `true`.
+
+```
+const schema = {
+	username: [isString(), minLength(6)]
+}
+const data = {
+	username: 123
+}
+validate(data, schema, {multipleErrors: true})
 // =>
-// { username: [ "Invalid username." ],
-//   password: [ "'password' must be at least 8 digits long." ],
-//   confirmPassword: 
-//    [ "'confirmPassword' and 'password' do not match.",
-//      "'confirmPassword' must be at least 8 digits long." ] }
-```
-## Syntax
-```javascript
-validate(data, schema, multipleError?)
+//{
+//  username: [
+//    "'123' is not a valid string.",
+//    'It must be at least 6 characters long.'
+//  ]
+//}
 ```
 
-## Validate single data
-Single piece of data can be validated against single or multiple validators
+### Partial validation
+Partial validation is useful for PATCH requests.
 
-### With single validator
-```javascript
-validate(1, isString());
-// => '1' is not a valid string.
+```
+const schema = {
+	firstName: required(true),
+	lastName: required(true)
+};
 
-validate("apple", isString());
+const data = {
+	firstName: 'El'
+};
+
+validate(data, schema, { partial: true });
 // => null
+// It did not complain about 'lastName'
+
 ```
 
-### With multiple validators
-```javascript
-validate("", [required(true), isNumber()]);
-// => This field is required.
+### Strict validation
+In `strict` mode `validate` will complain about any keys that are outside the schema.
+
 ```
-
-### Get multiple errors
-Pass `true` as the 3rd argument to the `validate` function to get multiple errors.
-
-```javascript
-validate("", [required(true), isNumber()], true);
-// => [ "This field is required.", "'' is not a valid number." ]
-
-// returns empty list if data is valid
-validate(1, [required(true), isNumber()], true);
-// => []
-```
-
-## Validate multiple data
-Multiple data can be validated against single or multiple validators
-
-```javascript
-let loginSchema = {
-	username: required(true),
-	password: [required(true), minLength(8)]
+const schema = {
+	firstName: required(true),
+	lastName: required(true)
 };
 
-let loginData = {
-	username: "ausername",
-	password: ""
+const data = {
+	firstName: 'El',
+	lastName: 'Ren',
+	address: 'somewhere'
 };
 
-validate(loginData, loginSchema);
-// => { username: null, password: 'This field is required.' }
+validate(data, schema, { strict: true });
+// => { address: 'This field is not allowed.' }
 ```
 
-### Get multiple errors
-Pass `true` as the 3rd argument to the `validate` function to get multiple errors.
+## Async validation
+`validatex` has async version of `validate` too, which is `avalidate`.
+It has the same signature as that of `validate`. The only difference is it returns a Promise.
 
-```javascript
-validate(loginData, loginSchema, true);
-// =>
-// { username: [],
-//   password: 
-//    [ "This field is required.",
-//      "'password' must be at least 8 digits long."] }
+```
+await avalidate(data, schema, options?)
 ```
 
-## Customize error
-Depending upon the validators custom error can be passed as an extra argument.
-
-```javascript
-validate("", required(true, "This field cannot be blank."));
-// => "This field cannot be blank."
-
-// Error message can be templated to show the key and value.
-let schema = {
-	username: isString("Invalid value '{value}' for '{key}'.")
-};
-
-data = {
-	username: 1
-};
-
-validate(data, schema);
-// => { username: "Invalid value '1' for 'username'." }
-```
-
-## Custom validator
+## Validators
 A validator is a normal function which must return error if data is invalid.  It must return `undefined` if data is valid.
 Lets create a naive email validator.
 
@@ -167,7 +154,7 @@ A validator can be composed to tune its behavior. Below is how `minLength` valid
 
 ```javascript
 // 'length' = length against which validation will be made
-// 'error' = user suppoied error message which will override the default error message
+// 'error' = user supplied error message which will override the default error message
 let minLength = (length, error) => {
 	// return actual validator
 	return (value) => {
@@ -237,8 +224,51 @@ validate(data, schema);
 //   confirmPassword: "'confirmPassword' and 'password' do not match." }
 ```
 
-## Validators
-Unlike validators in other libraries these validators must be used with the `validate` function.
+`validatex` ships with some built in validators for convenience.
+
+## Customize error
+Depending upon the validators custom error can be passed as an extra argument.
+
+```javascript
+validate("", required(true, "This field cannot be blank."));
+// => "This field cannot be blank."
+
+// Error message can be templated to show the key and value.
+let schema = {
+	username: isString("Invalid value '{value}' for '{key}'.")
+};
+
+data = {
+	username: 1
+};
+
+validate(data, schema);
+// => { username: "Invalid value '1' for 'username'." }
+```
+
+## Internal API
+```
+validateSingle(data, validator/s, multipleErrors?, allData?, currentKey?)
+```
+
+Single piece of data can be validated against single or multiple validators with `validateSingle`. It is the low level function that is used by `validate` and `avalidate` functions. It can be used to create other powerful tools like [powerform](https://github.com/ludbek/powerform).
+
+### With single validator
+```javascript
+validateSingle(1, isString());
+// => '1' is not a valid string.
+
+validateSingle("apple", isString());
+// => null
+```
+
+### With multiple validators
+```javascript
+validateSingle("", [required(true), isNumber()]);
+// => This field is required.
+```
+
+## Built in validators
 
 ### isBoolean
 Checks if a value is a boolean.
@@ -342,4 +372,31 @@ Checks if a value is in the given pattern.
 
 ```javascript
 pattern(regex, customError?)
+```
+
+### Get multiple errors
+Pass `true` as the 3rd argument to the `validate` function to get multiple errors.
+
+```javascript
+validate("", [required(true), isNumber()], true);
+// => [ "This field is required.", "'' is not a valid number." ]
+
+// returns empty list if data is valid
+validate(1, [required(true), isNumber()], true);
+// => []
+```
+
+## Syntax
+```javascript
+validate(data, schema, options?)
+```
+
+Default options
+```javascript
+{
+	multipleErrors: false,
+	partial: false,
+	strict: true,
+	invalidKeyError: 'This field is not allowed.'
+}
 ```

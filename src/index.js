@@ -3,8 +3,12 @@ export const SkipValidation = function (message) {
 	this.message = message;
 };
 
+const formatError = (error, data, key) => {
+	return error.replace("{value}", data).replace("{key}", key)
+}
+
 export const validateSingle = (data, validators, multipleErrors, all, key) => {
-	let errors = [];
+	const errors = [];
 
 	if (typeof validators === "function") {
 		validators = [validators];
@@ -14,7 +18,7 @@ export const validateSingle = (data, validators, multipleErrors, all, key) => {
 		try {
 			let error = validators[i](data, all);
 			if (typeof error === "string") {
-				const formattedError = error.replace("{value}", data).replace("{key}", key)
+				const formattedError = formatError(error, data, key)
 				if (!multipleErrors) return formattedError;
 				errors.push(formattedError);
 			}
@@ -34,32 +38,124 @@ export const validateSingle = (data, validators, multipleErrors, all, key) => {
 	return null
 };
 
-
-export const validate = (data, validators, multipleErrors) => {
-	if (!validators) return;
-
-	let errors = {};
-	let noError = true;
-
-	if (typeof validators === "object" && !validators.length) {
-		for (let prop in validators) {
-			if (validators.hasOwnProperty(prop)) {
-				let error = validateSingle(data[prop], validators[prop], multipleErrors, data, prop);
-
-				if (error !== null) {
-					noError = false;
-				}
-
-				errors[prop] = error;
-			}
-		}
-
-		return noError? null: errors;
+export const avalidateSingle = (data, validators, multipleErrors, all, key) => {
+	if (typeof validators === "function") {
+		validators = [validators]
 	}
 
-	errors = validateSingle(data, validators, multipleErrors);
-	return errors
-};
+	async function v (funcs, errors) {
+		if(errors.length > 0) {
+			if(!multipleErrors) return errors[0]
+		}
+
+		if(funcs.length === 0) {
+			return errors.length > 0 ? errors : null
+		}
+
+		try {
+			const currentValidator = funcs.shift()
+			const error = await currentValidator(data, all)
+			if(error) {
+				errors.push(formatError(error, data, key))
+			}
+			return v(funcs, errors)
+		}
+		catch (err) {
+			if (err instanceof SkipValidation) {
+				if(errors.length > 0) {
+					return multipleErrors? errors: errors[0]
+				}
+				return null
+			}
+			else {
+				throw err
+			}
+		}
+	}
+
+	return v([...validators], [])
+}
+
+function getInvalidKeys ({dataKeys, validKeys}) {
+	return dataKeys.filter(key => !validKeys.includes(key))
+}
+
+const defaultOptions = {
+	multipleErrors: false,
+	partial: false,
+	strict: true,
+	invalidKeyError: 'This field is not allowed.'
+}
+
+const _validate = (data, schema, options, v) => {
+	data = data || {}
+	if(!schema) throw new Error("'schema' is required.")
+	options = {...defaultOptions, ...options}
+	const { multipleErrors, partial, strict, invalidKeyError } = options
+	const dataKeys = Object.keys(data)
+	let validKeys = Object.keys(schema)
+	if(partial) {
+		validKeys = validKeys.filter(key => dataKeys.includes(key))
+	}
+
+	if(strict) {
+		const invalidKeys = getInvalidKeys({dataKeys, validKeys})
+		if(invalidKeys.length > 0) {
+			return invalidKeys.reduce((a, key) => {
+				a[key] = invalidKeyError
+				return a
+			}, {})
+		}
+	}
+
+	return v(validKeys, null, data, schema, multipleErrors)
+}
+
+export const validate = (data, schema, options = {}) => {
+	function v(keys, errors, data, schema, multipleErrors) {
+		if(keys.length === 0) {
+			return errors
+		}
+		const key = keys.shift()
+		const error = validateSingle(
+			data[key],
+			schema[key],
+			multipleErrors,
+			data,
+			key
+		)
+		if(error) {
+			errors = errors || {}
+			errors[key] = error
+		}
+		return v(keys, errors, data, schema, multipleErrors)
+	}
+
+	return _validate(data, schema, options, v)
+}
+
+export const avalidate = (data, schema, options = {}) => {
+	async function v(keys, errors, data, schema, multipleErrors) {
+		if(keys.length === 0) {
+			return errors
+		}
+		const key = keys.shift()
+		const error = await avalidateSingle(
+			data[key],
+			schema[key],
+			multipleErrors,
+			data,
+			key
+		)
+		if(error) {
+			errors = errors || {}
+			errors[key] = error
+		}
+		return v(keys, errors, data, schema, multipleErrors)
+	}
+
+	return _validate(data, schema, options, v)
+}
 
 
 export const required = (flag, error) => {

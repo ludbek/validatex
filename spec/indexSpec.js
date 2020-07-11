@@ -1,23 +1,27 @@
-import {validate,
-		validateSingle,
-		SkipValidation,
-		required,
-		isNumber,
-		isString,
-		equalsTo,
-		isEmail,
-		isArray,
-		isObject,
-		oneOf,
-		noneOf,
-		length,
-		minLength,
-		maxLength,
-		isBoolean,
-		within,
-		excludes,
-		pattern,
-		isFunction} from "../src/index.js";
+import {
+	validate,
+	validateSingle,
+	avalidateSingle,
+	avalidate,
+	SkipValidation,
+	required,
+	isNumber,
+	isString,
+	equalsTo,
+	isEmail,
+	isArray,
+	isObject,
+	oneOf,
+	noneOf,
+	length,
+	minLength,
+	maxLength,
+	isBoolean,
+	within,
+	excludes,
+	pattern,
+	isFunction
+} from "../src/index.js";
 import {expect} from "chai";
 
 
@@ -25,41 +29,218 @@ let isInvalid = () => {
 	return "{key}: invalid value {value}";
 }
 
-describe("validateSingle", () => {
-	it("works with single validator.", () => {
-		let error = validate(1, isNumber());
+describe('avalidateSingle', () => {
+	it('works with async validator', async () => {
+		async function validator () { return 'The value should not be 1' }
+		const error = await avalidateSingle(1, validator);
+		expect(error).to.equal('The value should not be 1');
+	})
+
+	it('works with multiple async validators', async () => {
+		async function pass() {}
+		async function fail() {return 'Bazinga !!!'}
+		const error = await avalidateSingle(1, [pass, fail])
+		expect(error).to.eql('Bazinga !!!')
+	})
+
+	it('works with async and sync validators', async () => {
+		async function pass() {}
+		function fail() {return 'Bazinga !!!'}
+		const error = await avalidateSingle(1, [pass, fail])
+		expect(error).to.eql('Bazinga !!!')
+	})
+
+	it("works with single validator.", async () => {
+		let error = await avalidateSingle(1, isNumber());
 		expect(error).to.equal(null);
 
-		error = validate("string", isNumber());
+		error = await avalidateSingle("string", isNumber());
+		expect(error).to.equal("'string' is not a valid number.");
+	});
+
+	it("works with multiple validators.", async () => {
+		let error = await avalidateSingle(9876543210, [isNumber(), length(10)]);
+		expect(error).to.equal(null);
+
+
+		error = await avalidateSingle(1, [isNumber(), length(10)]);
+		expect(error).to.equal("It must be 10 characters long.");
+	});
+
+	it("returns single error by default.", async () => {
+		const error = await avalidateSingle("string", [isNumber(), length(10)]);
+		expect(error).to.equal("'string' is not a valid number.");
+	});
+
+	it("returns multiple errors.", async () => {
+		const error = await avalidateSingle("string", [isNumber(), length(10)], true);
+		expect(error).to.eql(["'string' is not a valid number.", "It must be 10 characters long."]);
+	});
+
+	it("returns null even when multiple validators are present", async () => {
+		const error = await avalidateSingle(9876543210, [isNumber(), length(10)], true);
+		expect(error).to.eql(null);
+	});
+
+	it("short curcuits if one of the validator returns false.", async  () => {
+		const error = await avalidateSingle("", [required(false), isNumber()]);
+		expect(error).to.eql(null);
+	});
+
+	it("includes key and value to error template.", async () => {
+		const error = await avalidateSingle("Lel", isInvalid, false, undefined, "name");
+		expect(error).to.eql("name: invalid value Lel");
+	});
+})
+
+describe("avalidate", () => {
+	it("complains if unknown fields are passed in strict mode", async () => {
+		const data = {fieldA: 1, fieldB: 2, fieldC: 3}
+		const schema = {fieldC: required(true)}
+		const error = await avalidate(data, schema)
+		expect(error).to.eql({
+			fieldA: 'This field is not allowed.',
+			fieldB: 'This field is not allowed.',
+		})
+	})
+
+	it("wont complain if unknown fields are passed in non strict mode", async () => {
+		const data = {fieldA: 1, fieldB: 2, fieldC: 3}
+		const schema = {fieldC: required(true)}
+		const error = await avalidate(data, schema, {strict: false})
+		expect(error).to.eql(null)
+	})
+
+	it('supports partial mode', async () => {
+		const data = {fieldA: 1}
+		const schema = {
+			fieldA: required(true),
+			fieldB: required(true)
+		}
+		const error = await avalidate(data, schema, { partial: true })
+		expect(error).to.eql(null)
+	})
+
+	it('works with async validators', async () => {
+		async function fail() {return 'Bazinga !!!'}
+		async function pass() {}
+		const data = {fieldB: 'a data'}
+		const schema = {fieldA: [pass, fail], fieldB: [required(true), pass]}
+		const errors = await avalidate(data, schema)
+		expect(errors).to.eql({
+			fieldA: 'Bazinga !!!'
+		})
+	})
+
+	it("returns null if valid.", async () => {
+		const error = await avalidate({planet: "earth"}, {planet: [isString()]});
+		expect(error).to.eql(null)
+	});
+
+	it("validates object data", async () => {
+		let schema = {
+			"string": [isString(), length(2)],
+			"number": [isNumber(), length(2)]
+		};
+
+		let data = {};
+		let error = await avalidate(data, schema);
+		expect(error.string).to.eql("'undefined' is not a valid string.");
+		expect(error.number).to.eql("'undefined' is not a valid number.");
+
+
+		data = {string: "earth", number: 123};
+		error = await avalidate(data, schema);
+		expect(error.string).to.eql("It must be 2 characters long.");
+		expect(error.number).to.eql("It must be 2 characters long.");
+
+
+		data = {string: "ab", number: 12};
+		error = await avalidate(data, schema);
+		expect(error).to.not.exist;
+	});
+
+	it("returns multiple errors", async () => {
+		const schema = {
+			"string": [isString(), length(2)],
+			"number": [isNumber(), length(2)]
+		};
+
+		const data = {};
+		const error = await avalidate(data, schema, {multipleErrors: true});
+		expect(error.string).to.eql([
+			"'undefined' is not a valid string.",
+			"It must be 2 characters long."
+		]);
+		expect(error.number).to.eql([
+			"'undefined' is not a valid number.",
+			"It must be 2 characters long."
+		]);
+	});
+
+	it("passes entire data to validator as second arg", async () => {
+		let schema = {
+			"password": [],
+			"confirmPassword": equalsTo("password")
+		};
+
+		let data = {"password": "a", "confirmPassword": "b"};
+		let error = await avalidate(data, schema);
+		expect(error.password).to.not.exist;
+		expect(error.confirmPassword).to.eql("'confirmPassword' and 'password' do not match.");
+
+		data.confirmPassword = "a";
+		error = await avalidate(data, schema);
+		expect(error).to.not.exist;
+	});
+
+	it("sets error of a key in composite data to 'undefined' if its valid.", async () => {
+		const schema = {
+			"password": required(true),
+			"confirmPassword": equalsTo("password")
+		};
+
+		const data = {"password": "a", "confirmPassword": "b"};
+		const error = await avalidate(data, schema);
+		expect(error.password).to.not.exist;
+	});
+});
+
+describe("validateSingle", () => {
+	it("works with single validator.", () => {
+		let error = validateSingle(1, isNumber());
+		expect(error).to.equal(null);
+
+		error = validateSingle("string", isNumber());
 		expect(error).to.equal("'string' is not a valid number.");
 	});
 
 	it("works with multiple validators.", () => {
-		let error = validate(9876543210, [isNumber(), length(10)]);
+		let error = validateSingle(9876543210, [isNumber(), length(10)]);
 		expect(error).to.equal(null);
 
 
-		error = validate(1, [isNumber(), length(10)]);
+		error = validateSingle(1, [isNumber(), length(10)]);
 		expect(error).to.equal("It must be 10 characters long.");
 	});
 
 	it("returns single error by default.", () => {
-		let error = validate("string", [isNumber(), length(10)]);
+		let error = validateSingle("string", [isNumber(), length(10)]);
 		expect(error).to.equal("'string' is not a valid number.");
 	});
 
 	it("returns multiple errors.", () => {
-		let error = validate("string", [isNumber(), length(10)], true);
+		let error = validateSingle("string", [isNumber(), length(10)], true);
 		expect(error).to.eql(["'string' is not a valid number.", "It must be 10 characters long."]);
 	});
 
 	it("returns empty error.", () => {
-		let error = validate(9876543210, [isNumber(), length(10)], true);
+		let error = validateSingle(9876543210, [isNumber(), length(10)], true);
 		expect(error).to.eql(null);
 	});
 
 	it("short curcuits if one of the validator returns false.", () => {
-		let error = validate("", [required(false), isNumber()]);
+		let error = validateSingle("", [required(false), isNumber()]);
 		expect(error).to.eql(null);
 	});
 
@@ -70,23 +251,36 @@ describe("validateSingle", () => {
 });
 
 describe("validate", () => {
+	it("complains if unknown fields are passed in strict mode", async () => {
+		const data = {fieldA: 1, fieldB: 2, fieldC: 3}
+		const schema = {fieldC: required(true)}
+		const error = await avalidate(data, schema)
+		expect(error).to.eql({
+			fieldA: 'This field is not allowed.',
+			fieldB: 'This field is not allowed.',
+		})
+	})
+
+	it("wont complain if unknown fields are passed in non strict mode", async () => {
+		const data = {fieldA: 1, fieldB: 2, fieldC: 3}
+		const schema = {fieldC: required(true)}
+		const error = await avalidate(data, schema, {strict: false})
+		expect(error).to.eql(null)
+	})
+
+	it('supports partial mode', async () => {
+		const data = {fieldA: 1}
+		const schema = {
+			fieldA: required(true),
+			fieldB: required(true)
+		}
+		const error = await avalidate(data, schema, { partial: true })
+		expect(error).to.eql(null)
+	})
+
 	it("returns undefined if composite data is valid.", () => {
 		let error = validate({planet: "earth"}, {planet: [isString()]});
 		expect(error).to.not.exist;
-	});
-
-	it("validates non object data", () => {
-		let error = validate("a", isNumber());
-		expect(error).to.eql("'a' is not a valid number.");
-
-		error = validate("string", [isNumber(), length(10)]);
-		expect(error).to.eql("'string' is not a valid number.");
-
-		error = validate(12, [isNumber(), length(10)]);
-		expect(error).to.eql("It must be 10 characters long.");
-
-		error = validate(1234567890, [isNumber(), length(10)]);
-		expect(error).to.equal(null);
 	});
 
 	it("validates object data", () => {
@@ -119,7 +313,7 @@ describe("validate", () => {
 		};
 
 		let data = {};
-		let error = validate(data, schema, true);
+		let error = validate(data, schema, {multipleErrors: true});
 		expect(error.string).to.eql(
 				["'undefined' is not a valid string.", "It must be 2 characters long."]);
 		expect(error.number).to.eql(
@@ -151,10 +345,6 @@ describe("validate", () => {
 		let data = {"password": "a", "confirmPassword": "b"};
 		let error = validate(data, schema);
 		expect(error.password).to.not.exist;
-	});
-
-	it("returns 'undefined' if validator is absent", () => {
-		expect(validate("data")).to.not.exist;
 	});
 });
 
@@ -517,46 +707,46 @@ describe("isBoolean", () => {
 
 describe("within", () => {
 	it("works with single item.", () => {
-		let got = validate(1, within([1,2]));
+		let got = validateSingle(1, within([1,2]));
 		expect(got).to.not.exist;
 
-		got = validate(3, within([1,2]));
+		got = validateSingle(3, within([1,2]));
 		expect(got).to.equal("[3] do not fall under the allowed list.");
 	});
 
 	it("works with multiple items.", () => {
-		let got = validate([2,3], within([1,2,3]));
+		let got = validateSingle([2,3], within([1,2,3]));
 		expect(got).to.not.exist;
 
-		got = validate([2,4,5], within([1,2,3]));
+		got = validateSingle([2,4,5], within([1,2,3]));
 		expect(got).to.equal("[4,5] do not fall under the allowed list.");
 	});
 
 	it("accepts custom error.", () => {
-		let got = validate([1,4,5], within([1,2,3], "Invalid values."));
+		let got = validateSingle([1,4,5], within([1,2,3], "Invalid values."));
 		expect(got).to.equal("Invalid values.");
 	});
 });
 
 describe("excludes", () => {
 	it("works with single item.", () => {
-		let got = validate(3, excludes([1,2]));
+		let got = validateSingle(3, excludes([1,2]));
 		expect(got).to.not.exist;
 
-		got = validate(1, excludes([1,2]));
+		got = validateSingle(1, excludes([1,2]));
 		expect(got).to.equal("[1] fall under restricted values.");
 	});
 
 	it("works with multiple items.", () => {
-		let got = validate([4,5], excludes([1,2,3]));
+		let got = validateSingle([4,5], excludes([1,2,3]));
 		expect(got).to.not.exist;
 
-		got = validate([2,3,5], excludes([1,2,3]));
+		got = validateSingle([2,3,5], excludes([1,2,3]));
 		expect(got).to.equal("[2,3] fall under restricted values.");
 	});
 
 	it("accepts custom error.", () => {
-		let got = validate(3, excludes([1,2,3], "Invalid values."));
+		let got = validateSingle(3, excludes([1,2,3], "Invalid values."));
 		expect(got).to.equal("Invalid values.");
 	});
 });

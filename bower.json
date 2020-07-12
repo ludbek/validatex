@@ -1,0 +1,24 @@
+{	
+  "name": "validate-x",	
+  "description": "A simple yet powerful data validator for javascript.",	
+  "main": "lib/index.js",	
+  "authors": [	
+    "ludbek"	
+  ],	
+  "license": "ISC",	
+  "keywords": [	
+    "validate",	
+    "validator",	
+    "schema",
+	"async"
+  ],	
+  "homepage": "https://github.com/ludbek/validatex",	
+  "ignore": [	
+    "**/.*",	
+    "node_modules",	
+    "bower_components",	
+    "test",	
+    "tests"	
+  ]	
+}	
+

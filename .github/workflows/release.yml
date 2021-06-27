@@ -1,0 +1,17 @@
+name: Release Validatex
+on: [release]
+jobs:
+  Release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: lint
+        run: |
+          npm run lint
+      - name: test
+        run: |
+          npm run test
+      # - name: publish
+      #   run: |
+      #     npm publish

@@ -1,0 +1,9 @@
+{
+	"extends": ["tslint:recommended", "tslint-config-prettier"],
+	"rules": {
+		"variable-name": {
+			"options": ["ban-keywords"],
+			"severity": "off"
+		}
+	}
+}

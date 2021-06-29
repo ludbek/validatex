@@ -82,12 +82,12 @@ function isCustomErrorMsg(decoderOption: any): decoderOption is CustomErrorMsg {
 
 interface DecoderParams<T, U> {
 	typeGuard: (rawVal: unknown) => rawVal is T;
-	defaultErrorMsg: (val: any, context?: Context) => string;
+	getDefaultErrorMsg: (val: any, context?: Context) => string;
 	defaultParser: (rawVal: U) => T | U;
 }
 export function decoder<T, U>({
 	typeGuard,
-	defaultErrorMsg,
+	getDefaultErrorMsg,
 	defaultParser,
 }: DecoderParams<T, U>) {
 	return (options: DecoderOption<T> = {}) => {
@@ -105,7 +105,7 @@ export function decoder<T, U>({
 				throw new ValidationError(
 					errorMsg ||
 						(getErrorMsg && getErrorMsg(val, context)) ||
-						defaultErrorMsg(val, context),
+						getDefaultErrorMsg(val, context),
 				);
 			if (validate) {
 				validate(val, context);
@@ -117,19 +117,19 @@ export function decoder<T, U>({
 
 export const string = decoder<string, unknown>({
 	typeGuard: (val: unknown): val is string => typeof val === 'string',
-	defaultErrorMsg: () => 'Not a string',
+	getDefaultErrorMsg: () => 'Not a string',
 	defaultParser: identity,
 });
 
 export const number = decoder<number, unknown>({
 	typeGuard: (val: unknown): val is number => typeof val === 'number',
-	defaultErrorMsg: () => 'Not a number',
+	getDefaultErrorMsg: () => 'Not a number',
 	defaultParser: identity,
 });
 
 export const boolean = decoder<boolean, unknown>({
 	typeGuard: (val: unknown): val is boolean => typeof val === 'boolean',
-	defaultErrorMsg: () => 'Not a boolean',
+	getDefaultErrorMsg: () => 'Not a boolean',
 	defaultParser: identity,
 });
 

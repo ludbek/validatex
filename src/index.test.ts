@@ -17,7 +17,7 @@ describe('decoder', () => {
 		const defaultErrorMsg = 'Not a string';
 		const str = decoder<string, unknown>({
 			typeGuard: (val: unknown): val is string => typeof val === 'string',
-			defaultErrorMsg: () => defaultErrorMsg,
+			getDefaultErrorMsg: () => defaultErrorMsg,
 			defaultParser: identity,
 		});
 
@@ -32,7 +32,7 @@ describe('decoder', () => {
 		const customValidationErrorMsg = "must not contain '-'.";
 		const str = decoder<string, unknown>({
 			typeGuard: (val: unknown): val is string => typeof val === 'string',
-			defaultErrorMsg: () => defaultErrorMsg,
+			getDefaultErrorMsg: () => defaultErrorMsg,
 			defaultParser: identity,
 		});
 		const alphaNumSchema = str({
@@ -76,7 +76,7 @@ describe('decoder', () => {
 		const defaultErrorMsg = 'Not a string';
 		const str = decoder<string, unknown>({
 			typeGuard: (val: unknown): val is string => typeof val === 'string',
-			defaultErrorMsg: () => defaultErrorMsg,
+			getDefaultErrorMsg: () => defaultErrorMsg,
 			defaultParser: identity,
 		});
 		const fooSchema = str((val) => {
@@ -89,7 +89,7 @@ describe('decoder', () => {
 		const defaultErrorMsg = 'Not a string';
 		const str = decoder<string, unknown>({
 			typeGuard: (val: unknown): val is string => typeof val === 'string',
-			defaultErrorMsg: () => defaultErrorMsg,
+			getDefaultErrorMsg: () => defaultErrorMsg,
 			defaultParser: identity,
 		});
 		const customErrorMsg = 'A custom error msg.';

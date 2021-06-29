@@ -31,18 +31,31 @@ export interface ObjectType {
 	[index: string]: any;
 }
 
-export type DecoderValidator<T> = (val: T, context?: Context) => void;
+export type DecoderValidator<T> = (
+	val: T,
+	context?: Context,
+) => string | Record<string, string> | undefined;
 export interface DecoderFullOption<T> {
 	parse?(val: any): T;
-	validate?: DecoderValidator<T>;
+	validate?: DecoderValidator<T> | DecoderValidator<T>[];
 	errorMsg?: string;
 	getErrorMsg?: (val: any, context?: Context) => string;
 }
 export type CustomErrorMsg = string;
 export type DecoderOption<T> =
 	| DecoderValidator<T>
+	| DecoderValidator<T>[]
 	| CustomErrorMsg
 	| DecoderFullOption<T>;
+
+export function pipe<T>(validators: DecoderValidator<T>[]) {
+	return (val: T, context?: Context) => {
+		for (const v of validators) {
+			const error = v(val, context);
+			if (error !== undefined) return error;
+		}
+	};
+}
 
 export function isObject(val: any): val is ObjectType {
 	return typeof val === 'object' && val !== null;
@@ -94,11 +107,17 @@ export function decoder<T, U>({
 		return (val: any, context?: Context): T => {
 			val = defaultParser(val);
 			options = isDecoderValidator<T>(options)
-				? { validate: options }
+				? { validate: pipe([options]) }
+				: options;
+			options = Array.isArray(options)
+				? { validate: pipe(options) }
 				: options;
 			options = isCustomErrorMsg(options)
 				? { errorMsg: options }
 				: options;
+			if (Array.isArray(options.validate)) {
+				options.validate = pipe(options.validate);
+			}
 			const { parse, validate, errorMsg, getErrorMsg } = options;
 			val = parse ? parse(val) : val;
 			if (!typeGuard(val))
@@ -108,7 +127,8 @@ export function decoder<T, U>({
 						getDefaultErrorMsg(val, context),
 				);
 			if (validate) {
-				validate(val, context);
+				const error = validate(val, context);
+				if (error) throw new ValidationError(error);
 			}
 			return val;
 		};
@@ -186,7 +206,7 @@ export function constructUnknownFieldsError(
 interface ObjectFullOption<T> {
 	strict?: boolean;
 	unknownFieldErrorMsg?: string;
-	validate?: DecoderValidator<T>;
+	validate?: DecoderValidator<T> | DecoderValidator<T>[];
 }
 type ObjectOption<T> = DecoderValidator<T> | ObjectFullOption<T>;
 
@@ -203,6 +223,9 @@ export function object<T extends Schema, U extends MergeIntersection<T>>(
 		option = isUndefined(option)
 			? defaultOption
 			: { ...defaultOption, ...option };
+		if (Array.isArray(option.validate)) {
+			option.validate = pipe(option.validate);
+		}
 		const { validate, strict, unknownFieldErrorMsg } = option as any;
 
 		// handle unknown fields
@@ -237,7 +260,10 @@ export function object<T extends Schema, U extends MergeIntersection<T>>(
 
 		if (Object.keys(error).length !== 0) throw new ValidationError(error);
 
-		if (validate) validate(data as any, context);
+		if (validate) {
+			const error = validate(data as any, context);
+			if (error) throw new ValidationError(error);
+		}
 		return data as any;
 	};
 }
@@ -258,7 +284,9 @@ export function partial<
 
 export function array<T extends Decoder>(
 	schema: T,
-	customValidator?: DecoderValidator<ReturnType<T>[]>,
+	customValidator?:
+		| DecoderValidator<ReturnType<T>[]>
+		| DecoderValidator<ReturnType<T>[]>[],
 ) {
 	return (data: any, context?: Context): ReturnType<T>[] => {
 		data = Array.isArray(data) ? data : [undefined];
@@ -280,7 +308,13 @@ export function array<T extends Decoder>(
 		if (errors.length !== 0) {
 			throw new ValidationError(errors);
 		}
-		if (customValidator) customValidator(data, context);
+		if (Array.isArray(customValidator)) {
+			customValidator = pipe(customValidator);
+		}
+		if (customValidator) {
+			const error = customValidator(data, context);
+			if (error) throw new ValidationError(error);
+		}
 		return data;
 	};
 }

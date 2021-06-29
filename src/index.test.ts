@@ -12,6 +12,15 @@ import {
 	ValidationError,
 } from './index';
 
+const maxError = 'It must be at most 4 characters long.';
+function max5(val: string) {
+	if (val.length > 4) return maxError;
+}
+const singleWordError = 'It must be single word.';
+function isSingleWord(val: string) {
+	if (val.split(' ').length > 1) return singleWordError;
+}
+
 describe('decoder', () => {
 	it('works without any option', () => {
 		const defaultErrorMsg = 'Not a string';
@@ -43,9 +52,7 @@ describe('decoder', () => {
 			},
 			validate(val, { key } = { key: undefined }) {
 				if (val.includes('-'))
-					throw new ValidationError(
-						`${key} ${customValidationErrorMsg}`,
-					);
+					return `${key} ${customValidationErrorMsg}`;
 			},
 			errorMsg: customErrorMsg,
 		});
@@ -70,6 +77,12 @@ describe('decoder', () => {
 		expect(schema.bind(schema, 1, { key: 'akey' })).toThrow(
 			'akey must not be 1',
 		);
+
+		// it accepts an array of validators
+		const schemaB = str({ validate: [isSingleWord, max5] });
+		expect(schemaB.bind(schemaB, 'kathmandu')).toThrow(maxError);
+		expect(schemaB.bind(schemaB, 'new road')).toThrow(singleWordError);
+		expect(schemaB('abc')).toEqual('abc');
 	});
 
 	it('works with DecoderValidator', () => {
@@ -80,7 +93,7 @@ describe('decoder', () => {
 			defaultParser: identity,
 		});
 		const fooSchema = str((val) => {
-			if (val !== 'foo') throw new ValidationError("Its not 'foo'.");
+			if (val !== 'foo') return "Its not 'foo'.";
 		});
 		expect(fooSchema.bind(fooSchema, 'bar')).toThrow("Its not 'foo'.");
 	});
@@ -95,6 +108,19 @@ describe('decoder', () => {
 		const customErrorMsg = 'A custom error msg.';
 		const fooSchema = str(customErrorMsg);
 		expect(fooSchema.bind(fooSchema, 1)).toThrow(customErrorMsg);
+	});
+
+	it('supports array of validators', () => {
+		const defaultErrorMsg = 'Not a string';
+		const str = decoder<string, unknown>({
+			typeGuard: (val: unknown): val is string => typeof val === 'string',
+			getDefaultErrorMsg: () => defaultErrorMsg,
+			defaultParser: identity,
+		});
+		const fooSchema = str([isSingleWord, max5]);
+		expect(fooSchema.bind(fooSchema, 'kathmandu')).toThrow(maxError);
+		expect(fooSchema.bind(fooSchema, 'new road')).toThrow(singleWordError);
+		expect(fooSchema('abc')).toEqual('abc');
 	});
 });
 
@@ -173,7 +199,7 @@ describe('object', () => {
 		}) => {
 			const { password, confirm } = val;
 			if (password !== confirm) {
-				throw new ValidationError(expectedError);
+				return expectedError;
 			}
 		};
 		const signupSchema = object(
@@ -290,7 +316,7 @@ describe('array', () => {
 	it('validates empty array', () => {
 		const expectedError = 'Only 2 items are allowed';
 		function allowOnly2(values: string[]) {
-			if (values.length > 2) throw new ValidationError(expectedError);
+			if (values.length > 2) return expectedError;
 		}
 		const namesSchema = array(string(), allowOnly2);
 		expect(namesSchema.bind(namesSchema, ['a', 'b', 'c', 'd'])).toThrow(
@@ -338,7 +364,7 @@ describe('partial', () => {
 			username: string;
 			password: string;
 		}) {
-			if (username === password) throw new ValidationError(expectedError);
+			if (username === password) return expectedError;
 		}
 		const userSchema = partial(
 			{

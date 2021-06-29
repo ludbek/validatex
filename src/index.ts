@@ -261,8 +261,8 @@ export function object<T extends Schema, U extends MergeIntersection<T>>(
 		if (Object.keys(error).length !== 0) throw new ValidationError(error);
 
 		if (validate) {
-			const error = validate(data as any, context);
-			if (error) throw new ValidationError(error);
+			const err = validate(data as any, context);
+			if (err) throw new ValidationError(err);
 		}
 		return data as any;
 	};
@@ -312,8 +312,8 @@ export function array<T extends Decoder>(
 			customValidator = pipe(customValidator);
 		}
 		if (customValidator) {
-			const error = customValidator(data, context);
-			if (error) throw new ValidationError(error);
+			const err = customValidator(data, context);
+			if (err) throw new ValidationError(err);
 		}
 		return data;
 	};

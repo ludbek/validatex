@@ -9,7 +9,7 @@ import {
 	toggle,
 	decoder,
 	identity,
-	ValidationError,
+	nullable,
 } from './index';
 
 const maxError = 'It must be at most 4 characters long.';
@@ -377,6 +377,23 @@ describe('partial', () => {
 		expect(userSchema.bind(userSchema, data)).toThrow(
 			JSON.stringify(expectedError),
 		);
+	});
+});
+
+describe('nullable', () => {
+	it('allows null', () => {
+		const nullableStr = nullable(string());
+		expect(nullableStr(null)).toEqual(null);
+	});
+
+	it('works with non null', () => {
+		const nullableStr = nullable(string());
+		expect(nullableStr('a')).toEqual('a');
+	});
+
+	it('throws if invalid data is passed', () => {
+		const nullableStr = nullable(string());
+		expect(nullableStr.bind(nullableStr, 1)).toThrow('"Not a string"');
 	});
 });
 

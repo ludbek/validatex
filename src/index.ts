@@ -318,3 +318,10 @@ export function array<T extends Decoder>(
 		return data;
 	};
 }
+
+export function nullable<T extends Decoder>(aDecoder: T) {
+	return (val: any): ReturnType<T> | null => {
+		if (val === null) return null;
+		return aDecoder(val);
+	};
+}

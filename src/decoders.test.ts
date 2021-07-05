@@ -12,6 +12,7 @@ import v, {
 	nullable,
 	literal,
 	union,
+	TypeOf,
 } from './index';
 
 const maxError = 'It must be at most 4 characters long.';
@@ -157,7 +158,9 @@ describe('number', () => {
 describe('boolean', () => {
 	it('throws an error if a value is not a boolean', () => {
 		const boolSchema = boolean();
-		expect(boolSchema.bind(boolSchema, 1)).toThrow('Expected boolean but got number.');
+		expect(boolSchema.bind(boolSchema, 1)).toThrow(
+			'Expected boolean but got number.',
+		);
 	});
 
 	it('returns value if it is a boolean', () => {
@@ -182,8 +185,8 @@ describe('object', () => {
 		}
 		const expectedError = JSON.stringify({
 			name: 'Expected string but got undefined.',
-			address: 'Expected string but got undefined.'
-		})
+			address: 'Expected string but got undefined.',
+		});
 		expect(run).toThrow(expectedError);
 	});
 
@@ -192,13 +195,13 @@ describe('object', () => {
 		expect(userSchema.bind(userSchema, undefined)).toThrow();
 		const expectedError = JSON.stringify({
 			name: 'Expected string but got undefined.',
-			address: 'Expected string but got undefined.'
-		})
+			address: 'Expected string but got undefined.',
+		});
 		expect(userSchema.bind(userSchema, 1)).toThrow(expectedError);
 	});
 
 	it('respects custom validator', () => {
-		const error = { confirm: 'It must match "password".' }
+		const error = { confirm: 'It must match "password".' };
 		const customValidator = (val: {
 			password: string;
 			confirm: string;
@@ -221,7 +224,9 @@ describe('object', () => {
 			password: 'apassword',
 			confirm: 'bpassword',
 		};
-		expect(signupSchema.bind(signupSchema, rawData)).toThrow(JSON.stringify(error));
+		expect(signupSchema.bind(signupSchema, rawData)).toThrow(
+			JSON.stringify(error),
+		);
 	});
 
 	it('throws if unknown fields are passed', () => {
@@ -303,7 +308,9 @@ describe('array', () => {
 
 	it('validates non array value', () => {
 		const namesSchema = array(string());
-		const expectedError = [{ _index: 0, error: 'Expected string but got undefined.' }];
+		const expectedError = [
+			{ _index: 0, error: 'Expected string but got undefined.' },
+		];
 		expect(namesSchema.bind(namesSchema, undefined)).toThrow(
 			JSON.stringify(expectedError),
 		);
@@ -311,7 +318,9 @@ describe('array', () => {
 
 	it('validates empty array', () => {
 		const namesSchema = array(string());
-		const expectedError = [{ _index: 0, error: 'Expected string but got undefined.' }];
+		const expectedError = [
+			{ _index: 0, error: 'Expected string but got undefined.' },
+		];
 		expect(namesSchema.bind(namesSchema, [])).toThrow(
 			JSON.stringify(expectedError),
 		);
@@ -397,50 +406,54 @@ describe('nullable', () => {
 
 	it('throws if invalid data is passed', () => {
 		const nullableStr = nullable(string());
-		expect(nullableStr.bind(nullableStr, 1)).toThrow('Expected string but got number.');
+		expect(nullableStr.bind(nullableStr, 1)).toThrow(
+			'Expected string but got number.',
+		);
 	});
 });
 
 describe('literal', () => {
 	it('returns a value if it matches the supplied literal', () => {
-		const value = 'apple'
-		const apple = literal(value)
-		expect(apple(value)).toEqual(value)
-	})
+		const value = 'apple';
+		const apple = literal(value);
+		expect(apple(value)).toEqual(value);
+	});
 
 	it('throws if the value does not match the literal', () => {
-		const apple = literal('apple')
-		const expectedError = `Expected 'apple', but got 'banana'.`
-		expect(() => apple('banana')).toThrow(expectedError)
-	})
-})
+		const apple = literal('apple');
+		const expectedError = `Expected 'apple', but got 'banana'.`;
+		expect(() => apple('banana')).toThrow(expectedError);
+	});
+});
 
 describe('enum', () => {
 	it('returns the value if it is one of the allowed ones', () => {
-		const fruits = v.enum(['apple', 'banana'])
-		const apple = 'apple'
-		expect(fruits(apple)).toEqual(apple)
-	})
+		const fruits = v.enum(['apple', 'banana']);
+		const apple = 'apple';
+		expect(fruits(apple)).toEqual(apple);
+	});
 
 	it('throws if the value is not one of the allowed ones', () => {
-		const fruits = v.enum(['apple', 'banana'])
-		const expectedError = `Expected one of ['apple', 'banana'] but got 'tomato'.`
-		expect(() => fruits('tomato')).toThrow(expectedError)
-	})
-})
+		const fruits = v.enum(['apple', 'banana']);
+		const expectedError = `Expected one of ['apple', 'banana'] but got 'tomato'.`;
+		expect(() => fruits('tomato')).toThrow(expectedError);
+	});
+});
 
 describe('union', () => {
 	it('returns the value if it satisfies any of the given schemas', () => {
-		const alphaNumeric = union([string(), number()])
-		expect(alphaNumeric('a')).toEqual('a')
-		expect(alphaNumeric(1)).toEqual(1)
-	})
+		const alphaNumeric = union([string(), number()]);
+		expect(alphaNumeric('a')).toEqual('a');
+		expect(alphaNumeric(1)).toEqual(1);
+	});
 
 	it('throws if the value does not satisfies non of the given schemas', () => {
-		const alphaNumeric = union([string(), number()])
-		expect(() => alphaNumeric(true)).toThrow('The value did not match any of the given schemas.')
-	})
-})
+		const alphaNumeric = union([string(), number()]);
+		expect(() => alphaNumeric(true)).toThrow(
+			'The value did not match any of the given schemas.',
+		);
+	});
+});
 
 describe('kitchen sink', () => {
 	it('works', () => {
@@ -467,6 +480,7 @@ describe('kitchen sink', () => {
 				},
 			},
 		];
+		type UserSchema = TypeOf<typeof userSchema>;
 		expect(userSchema(value1)).toEqual(value1);
 		const value2 = [
 			{
@@ -484,14 +498,14 @@ describe('kitchen sink', () => {
 		];
 		const expectedError2 = JSON.stringify([
 			{
-				"_index":1,
-				"error": {
-					"name":"Expected string but got undefined.",
-					"address":{
-						"street2":"Expected string but got undefined."
-					}
-				}
-			}
+				_index: 1,
+				error: {
+					name: 'Expected string but got undefined.',
+					address: {
+						street2: 'Expected string but got undefined.',
+					},
+				},
+			},
 		]);
 		expect(userSchema.bind(userSchema, value2)).toThrow(expectedError2);
 	});

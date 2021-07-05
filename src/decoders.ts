@@ -13,6 +13,7 @@ import {
 	DecoderOption,
 	ValueError,
 	ObjectOption,
+    DecoderFullOption,
 } from './types';
 
 function pipe<T>(validators: DecoderValidator<T>[]) {
@@ -22,6 +23,11 @@ function pipe<T>(validators: DecoderValidator<T>[]) {
 			if (error !== undefined) return error;
 		}
 	};
+}
+
+function serializeValue(val: unknown): string {
+	if(typeof val === 'string') return `'${val}'`
+	return `${val}`
 }
 
 function isObject(val: any): val is ObjectType {
@@ -35,7 +41,7 @@ function isUndefined(val: any): val is undefined {
 class ValidationError extends Error {
 	readonly error: ErrorMsg;
 	constructor(msg: ErrorMsg) {
-		super(JSON.stringify(msg));
+		super(typeof msg === 'string'? msg: JSON.stringify(msg));
 		this.error = msg;
 	}
 }
@@ -60,6 +66,22 @@ function isCustomErrorMsg(decoderOption: any): decoderOption is CustomErrorMsg {
 	return typeof decoderOption === 'string';
 }
 
+function toFullOption<T>(options: DecoderOption<T> = {}): DecoderFullOption<T> {
+	options = isDecoderValidator<T>(options)
+		? { validate: pipe([options]) }
+		: options;
+	options = Array.isArray(options)
+		? { validate: pipe(options) }
+		: options;
+	options = isCustomErrorMsg(options)
+		? { errorMsg: options }
+		: options;
+	if (Array.isArray(options.validate)) {
+		options.validate = pipe(options.validate);
+	}
+	return options
+}
+
 function decoder<T, U>({
 	typeGuard,
 	getDefaultErrorMsg,
@@ -68,19 +90,7 @@ function decoder<T, U>({
 	return (options: DecoderOption<T> = {}) => {
 		return (val: any, context?: Context): T => {
 			val = defaultParser(val);
-			options = isDecoderValidator<T>(options)
-				? { validate: pipe([options]) }
-				: options;
-			options = Array.isArray(options)
-				? { validate: pipe(options) }
-				: options;
-			options = isCustomErrorMsg(options)
-				? { errorMsg: options }
-				: options;
-			if (Array.isArray(options.validate)) {
-				options.validate = pipe(options.validate);
-			}
-			const { parse, validate, errorMsg, getErrorMsg } = options;
+			const { parse, validate, errorMsg, getErrorMsg } = toFullOption<T>(options);
 			val = parse ? parse(val) : val;
 			if (!typeGuard(val))
 				throw new ValidationError(
@@ -88,11 +98,11 @@ function decoder<T, U>({
 						(getErrorMsg && getErrorMsg(val, context)) ||
 						getDefaultErrorMsg(val, context),
 				);
-			if (validate) {
+			if (isDecoderValidator(validate)) {
 				const error = validate(val, context);
 				if (error) throw new ValidationError(error);
 			}
-			return val;
+			return val as T;
 		};
 	};
 }
@@ -140,21 +150,26 @@ function constructUnknownFieldsError(
 	);
 }
 
+function serializeType(val: unknown): string {
+	if(val === null) return 'null'
+	return typeof val
+}
+
 const dString = decoder<string, unknown>({
 	typeGuard: (val: unknown): val is string => typeof val === 'string',
-	getDefaultErrorMsg: () => 'Not a string',
+	getDefaultErrorMsg: (val) => `Expected string but got ${serializeType(val)}.`,
 	defaultParser: identity,
 });
 
 const dNumber = decoder<number, unknown>({
 	typeGuard: (val: unknown): val is number => typeof val === 'number',
-	getDefaultErrorMsg: () => 'Not a number',
+	getDefaultErrorMsg: (val) => `Expected number but got ${serializeType(val)}.`,
 	defaultParser: identity,
 });
 
 const dBoolean = decoder<boolean, unknown>({
 	typeGuard: (val: unknown): val is boolean => typeof val === 'boolean',
-	getDefaultErrorMsg: () => 'Not a boolean',
+	getDefaultErrorMsg: (val) => `Expected boolean but got ${serializeType(val)}.`,
 	defaultParser: identity,
 });
 
@@ -274,8 +289,51 @@ function nullable<T extends Decoder>(aDecoder: T) {
 	};
 }
 
-function dEnum() {
-	console.log('yo');
+type Premitive = string | number | boolean | null | undefined;
+
+function literal<T extends Premitive>(val: T, options?: DecoderOption<T>) {
+	return (raw: unknown, context?: Context) => {
+		const { parse, validate, errorMsg, getErrorMsg } = toFullOption<T>(options);
+		val = parse ? parse(val) : val;
+		if (raw !== val) {
+			throw new ValidationError(
+				errorMsg ||
+					(getErrorMsg && getErrorMsg(val, context)) ||
+					`Expected ${serializeValue(val)}, but got ${serializeValue(raw)}.`
+				)
+		}
+		if (isDecoderValidator(validate)) {
+			const error = validate(val, context);
+			if (error) throw new ValidationError(error);
+		}
+		return raw as T;
+	};
+}
+
+// function union<T extends Decoder[]>(...args: T) {
+// 	return (val: any): ReturnType<T[number]> => {
+// 		return val as any;
+// 	};
+// }
+
+type EnumValues = string | number | boolean;
+
+function dEnum<T extends EnumValues[]>(values: readonly [...T], options?: DecoderOption<T>) {
+	return (val: unknown, context?: Context) => {
+		const { parse, validate, errorMsg, getErrorMsg } = toFullOption<T>(options);
+		val = parse ? parse(val) : val;
+		const hasValue = values.reduce((a, k) => a || k === val, false);
+		if (!hasValue) throw new ValidationError(
+			errorMsg ||
+			(getErrorMsg && getErrorMsg(val, context)) ||
+			`Expected one of [${values.map(val => serializeValue(val)).join(', ')}] but got ${serializeValue(val)}.`
+		);
+		if (isDecoderValidator(validate)) {
+			const error = validate(val, context);
+			if (error) throw new ValidationError(error);
+		}
+		return val as T[number];
+	};
 }
 
 export {
@@ -291,4 +349,6 @@ export {
 	optional,
 	toggle,
 	dEnum as enum,
+	literal,
+	// union,
 };

@@ -2,6 +2,7 @@ export type ErrorMsg = string | Record<string, any>;
 export type Context = {
 	key?: string;
 	index?: number;
+	schema?: any;
 };
 export type Decoder = (value: any, context?: Context) => any;
 export interface Switch<T> {

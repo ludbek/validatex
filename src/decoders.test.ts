@@ -1,4 +1,4 @@
-import {
+import v, {
 	string,
 	optional,
 	number,
@@ -10,6 +10,7 @@ import {
 	decoder,
 	identity,
 	nullable,
+	literal,
 } from './index';
 
 const maxError = 'It must be at most 4 characters long.';
@@ -129,7 +130,7 @@ describe('string', () => {
 		function run() {
 			return string()(1);
 		}
-		expect(run).toThrow('Not a string');
+		expect(run).toThrow('Expected string but got number.');
 	});
 
 	it('returns the value if it is a string', () => {
@@ -143,7 +144,7 @@ describe('number', () => {
 		function run() {
 			return number()('a string');
 		}
-		expect(run).toThrow('Not a number');
+		expect(run).toThrow('Expected number but got string.');
 	});
 
 	it('returns the value if it is a string', () => {
@@ -155,7 +156,7 @@ describe('number', () => {
 describe('boolean', () => {
 	it('throws an error if a value is not a boolean', () => {
 		const boolSchema = boolean();
-		expect(boolSchema.bind(boolSchema, 1)).toThrow('Not a boolean');
+		expect(boolSchema.bind(boolSchema, 1)).toThrow('Expected boolean but got number.');
 	});
 
 	it('returns value if it is a boolean', () => {
@@ -166,6 +167,11 @@ describe('boolean', () => {
 });
 
 describe('object', () => {
+	const expectedError = JSON.stringify({
+		name: 'Expected string but got undefined.',
+		address: 'Expected string but got undefined.'
+	})
+
 	it('returns a value if its valid', () => {
 		const userSchema = object({ name: string(), address: string() });
 		const val = { name: 'foo', address: 'bar' };
@@ -178,28 +184,24 @@ describe('object', () => {
 		function run() {
 			return userSchema(val);
 		}
-		expect(run).toThrow('{"name":"Not a string","address":"Not a string"}');
+		expect(run).toThrow(expectedError);
 	});
 
 	it('validates non objects', () => {
 		const userSchema = object({ name: string(), address: string() });
-		expect(userSchema.bind(userSchema, undefined)).toThrow(
-			'{"name":"Not a string","address":"Not a string"}',
-		);
-		expect(userSchema.bind(userSchema, 1)).toThrow(
-			'{"name":"Not a string","address":"Not a string"}',
-		);
+		expect(userSchema.bind(userSchema, undefined)).toThrow();
+		expect(userSchema.bind(userSchema, 1)).toThrow(expectedError);
 	});
 
 	it('respects custom validator', () => {
-		const expectedError = { confirm: 'It must match "password".' };
+		const error = { confirm: 'It must match "password".' }
 		const customValidator = (val: {
 			password: string;
 			confirm: string;
 		}) => {
 			const { password, confirm } = val;
 			if (password !== confirm) {
-				return expectedError;
+				return error;
 			}
 		};
 		const signupSchema = object(
@@ -215,9 +217,7 @@ describe('object', () => {
 			password: 'apassword',
 			confirm: 'bpassword',
 		};
-		expect(signupSchema.bind(signupSchema, rawData)).toThrow(
-			JSON.stringify(expectedError),
-		);
+		expect(signupSchema.bind(signupSchema, rawData)).toThrow(JSON.stringify(error));
 	});
 
 	it('throws if unknown fields are passed', () => {
@@ -289,8 +289,8 @@ describe('array', () => {
 		const namesSchema = array(string());
 		const value = [1, undefined];
 		const expectedError = [
-			{ _index: 0, error: 'Not a string' },
-			{ _index: 1, error: 'Not a string' },
+			{ _index: 0, error: 'Expected string but got number.' },
+			{ _index: 1, error: 'Expected string but got undefined.' },
 		];
 		expect(namesSchema.bind(namesSchema, value)).toThrow(
 			JSON.stringify(expectedError),
@@ -299,7 +299,7 @@ describe('array', () => {
 
 	it('validates non array value', () => {
 		const namesSchema = array(string());
-		const expectedError = [{ _index: 0, error: 'Not a string' }];
+		const expectedError = [{ _index: 0, error: 'Expected string but got undefined.' }];
 		expect(namesSchema.bind(namesSchema, undefined)).toThrow(
 			JSON.stringify(expectedError),
 		);
@@ -307,20 +307,20 @@ describe('array', () => {
 
 	it('validates empty array', () => {
 		const namesSchema = array(string());
-		const expectedError = [{ _index: 0, error: 'Not a string' }];
+		const expectedError = [{ _index: 0, error: 'Expected string but got undefined.' }];
 		expect(namesSchema.bind(namesSchema, [])).toThrow(
 			JSON.stringify(expectedError),
 		);
 	});
 
 	it('validates empty array', () => {
-		const expectedError = 'Only 2 items are allowed';
+		const expectedError = `Only 2 items are allowed`;
 		function allowOnly2(values: string[]) {
 			if (values.length > 2) return expectedError;
 		}
 		const namesSchema = array(string(), allowOnly2);
 		expect(namesSchema.bind(namesSchema, ['a', 'b', 'c', 'd'])).toThrow(
-			JSON.stringify(expectedError),
+			expectedError,
 		);
 	});
 });
@@ -393,9 +393,37 @@ describe('nullable', () => {
 
 	it('throws if invalid data is passed', () => {
 		const nullableStr = nullable(string());
-		expect(nullableStr.bind(nullableStr, 1)).toThrow('"Not a string"');
+		expect(nullableStr.bind(nullableStr, 1)).toThrow('Expected string but got number.');
 	});
 });
+
+describe('literal', () => {
+	it('returns a value if it matches the supplied literal', () => {
+		const value = 'apple'
+		const apple = literal(value)
+		expect(apple(value)).toEqual(value)
+	})
+
+	it('throws if the value does not match the literal', () => {
+		const apple = literal('apple')
+		const expectedError = `Expected 'apple', but got 'banana'.`
+		expect(() => apple('banana')).toThrow(expectedError)
+	})
+})
+
+describe('enum', () => {
+	it('returns the value if it is one of the allowed ones', () => {
+		const fruits = v.enum(['apple', 'banana'])
+		const apple = 'apple'
+		expect(fruits(apple)).toEqual(apple)
+	})
+
+	it('throws if the value is not one of the allowed ones', () => {
+		const fruits = v.enum(['apple', 'banana'])
+		const expectedError = `Expected one of ['apple', 'banana'] but got 'tomato'.`
+		expect(() => fruits('tomato')).toThrow(expectedError)
+	})
+})
 
 describe('kitchen sink', () => {
 	it('works', () => {
@@ -437,8 +465,17 @@ describe('kitchen sink', () => {
 				address: { street1: 'street 1' },
 			},
 		];
-		const expectedError2 =
-			'[{"_index":1,"error":{"name":"Not a string","address":{"street2":"Not a string"}}}]';
+		const expectedError2 = JSON.stringify([
+			{
+				"_index":1,
+				"error": {
+					"name":"Expected string but got undefined.",
+					"address":{
+						"street2":"Expected string but got undefined."
+					}
+				}
+			}
+		]);
 		expect(userSchema.bind(userSchema, value2)).toThrow(expectedError2);
 	});
 });

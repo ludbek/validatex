@@ -167,11 +167,6 @@ describe('boolean', () => {
 });
 
 describe('object', () => {
-	const expectedError = JSON.stringify({
-		name: 'Expected string but got undefined.',
-		address: 'Expected string but got undefined.'
-	})
-
 	it('returns a value if its valid', () => {
 		const userSchema = object({ name: string(), address: string() });
 		const val = { name: 'foo', address: 'bar' };
@@ -184,12 +179,20 @@ describe('object', () => {
 		function run() {
 			return userSchema(val);
 		}
+		const expectedError = JSON.stringify({
+			name: 'Expected string but got undefined.',
+			address: 'Expected string but got undefined.'
+		})
 		expect(run).toThrow(expectedError);
 	});
 
 	it('validates non objects', () => {
 		const userSchema = object({ name: string(), address: string() });
 		expect(userSchema.bind(userSchema, undefined)).toThrow();
+		const expectedError = JSON.stringify({
+			name: 'Expected string but got undefined.',
+			address: 'Expected string but got undefined.'
+		})
 		expect(userSchema.bind(userSchema, 1)).toThrow(expectedError);
 	});
 

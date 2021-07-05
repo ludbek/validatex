@@ -326,7 +326,7 @@ function dEnum<T extends EnumValues[]>(values: readonly [...T], options?: Decode
 		if (!hasValue) throw new ValidationError(
 			errorMsg ||
 			(getErrorMsg && getErrorMsg(val, context)) ||
-			`Expected one of [${values.map(val => serializeValue(val)).join(', ')}] but got ${serializeValue(val)}.`
+			`Expected one of [${values.map(datum => serializeValue(datum)).join(', ')}] but got ${serializeValue(val)}.`
 		);
 		if (isDecoderValidator(validate)) {
 			const error = validate(val, context);

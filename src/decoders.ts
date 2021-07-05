@@ -310,11 +310,34 @@ function literal<T extends Premitive>(val: T, options?: DecoderOption<T>) {
 	};
 }
 
-// function union<T extends Decoder[]>(...args: T) {
-// 	return (val: any): ReturnType<T[number]> => {
-// 		return val as any;
-// 	};
-// }
+function union<T extends Decoder[], K extends T[number]>(schemas: T, options?: DecoderOption<K>) {
+	return (val: any, context?: Context): ReturnType<K> => {
+		const { parse, validate, errorMsg, getErrorMsg } = toFullOption<K>(options);
+		val = parse ? parse(val) : val;
+
+		for(const schema of schemas) {
+			try {
+				val = schema(val, context)
+				if (isDecoderValidator(validate)) {
+					const error = validate(val, context);
+					if (error) throw new ValidationError(error);
+				}
+
+				return val as any;
+			}
+			catch(e) {
+				if(e.error !== undefined) continue
+				throw e
+			}
+		}
+
+		throw new ValidationError(
+			errorMsg ||
+			(getErrorMsg && getErrorMsg(val, context)) ||
+			'The value did not match any of the given schemas.'
+		);
+	};
+}
 
 type EnumValues = string | number | boolean;
 
@@ -350,5 +373,5 @@ export {
 	toggle,
 	dEnum as enum,
 	literal,
-	// union,
+	union,
 };

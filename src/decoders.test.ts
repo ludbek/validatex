@@ -11,6 +11,7 @@ import v, {
 	identity,
 	nullable,
 	literal,
+	union,
 } from './index';
 
 const maxError = 'It must be at most 4 characters long.';
@@ -425,6 +426,19 @@ describe('enum', () => {
 		const fruits = v.enum(['apple', 'banana'])
 		const expectedError = `Expected one of ['apple', 'banana'] but got 'tomato'.`
 		expect(() => fruits('tomato')).toThrow(expectedError)
+	})
+})
+
+describe('union', () => {
+	it('returns the value if it satisfies any of the given schemas', () => {
+		const alphaNumeric = union([string(), number()])
+		expect(alphaNumeric('a')).toEqual('a')
+		expect(alphaNumeric(1)).toEqual(1)
+	})
+
+	it('throws if the value does not satisfies non of the given schemas', () => {
+		const alphaNumeric = union([string(), number()])
+		expect(() => alphaNumeric(true)).toThrow('The value did not match any of the given schemas.')
 	})
 })
 

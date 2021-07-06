@@ -298,8 +298,8 @@ describe('array', () => {
 		const namesSchema = array(string());
 		const value = [1, undefined];
 		const expectedError = [
-			{ _index: 0, error: 'Expected string but got number.' },
-			{ _index: 1, error: 'Expected string but got undefined.' },
+			{ index: 0, error: 'Expected string but got number.' },
+			{ index: 1, error: 'Expected string but got undefined.' },
 		];
 		expect(namesSchema.bind(namesSchema, value)).toThrow(
 			JSON.stringify(expectedError),
@@ -309,7 +309,7 @@ describe('array', () => {
 	it('validates non array value', () => {
 		const namesSchema = array(string());
 		const expectedError = [
-			{ _index: 0, error: 'Expected string but got undefined.' },
+			{ index: 0, error: 'Expected string but got undefined.' },
 		];
 		expect(namesSchema.bind(namesSchema, undefined)).toThrow(
 			JSON.stringify(expectedError),
@@ -319,7 +319,7 @@ describe('array', () => {
 	it('validates empty array', () => {
 		const namesSchema = array(string());
 		const expectedError = [
-			{ _index: 0, error: 'Expected string but got undefined.' },
+			{ index: 0, error: 'Expected string but got undefined.' },
 		];
 		expect(namesSchema.bind(namesSchema, [])).toThrow(
 			JSON.stringify(expectedError),
@@ -498,7 +498,7 @@ describe('kitchen sink', () => {
 		];
 		const expectedError2 = JSON.stringify([
 			{
-				_index: 1,
+				index: 1,
 				error: {
 					name: 'Expected string but got undefined.',
 					address: {

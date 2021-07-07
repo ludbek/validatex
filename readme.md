@@ -120,10 +120,10 @@ const loginSchema = v.object({
 })
 
 type LoginSchema = TypeOf<typeof loginSchema>
-// type LoginSchema {
-//   username: string,
-//   password: string
-//}
+// type LoginSchema = {
+//     username: string;
+//     password: string;
+// }
 ```
 
 ## Builtin decoders
@@ -140,15 +140,13 @@ const name = v.string()
 
 ```typescript
 function alphaNumeric(val: string) {
-  /[a-zA-Z][\da-zA-Z]+/.test(val) ? undefined: 'Must be alpha numeric.';
+  return /[a-zA-Z][\da-zA-Z]+/.test(val) ? undefined : 'Must be alpha numeric.';
 }
 
-const username = v.string(alphaNumeric)
-username('user1')
-// user1
+const username = v.string(alphaNumeric);
+expect(username('user1')).toEqual('user1');
 
-username('123')
-// throws validation error 
+expect(() => username('123')).toThrow('Must be alpha numeric.');
 ```
 
 #### Parse

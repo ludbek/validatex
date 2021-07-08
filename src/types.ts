@@ -32,20 +32,20 @@ export interface ObjectType {
   [index: string]: any;
 }
 
-export type DecoderValidator<T> = (
+export type Validator<T> = (
   val: T,
   context?: Context,
 ) => string | Record<string, string> | undefined;
 export interface DecoderFullOption<T> {
   parse?(val: any): T;
-  validate?: DecoderValidator<T> | DecoderValidator<T>[];
+  validate?: Validator<T> | Validator<T>[];
   errorMsg?: string;
   getErrorMsg?: (val: any, context?: Context) => string;
 }
 export type CustomErrorMsg = string;
 export type DecoderOption<T> =
-  | DecoderValidator<T>
-  | DecoderValidator<T>[]
+  | Validator<T>
+  | Validator<T>[]
   | CustomErrorMsg
   | DecoderFullOption<T>;
 
@@ -58,9 +58,9 @@ export interface DecoderParams<T, U> {
 export interface ObjectFullOption<T> {
   strict?: boolean;
   unknownFieldErrorMsg?: string;
-  validate?: DecoderValidator<T> | DecoderValidator<T>[];
+  validate?: Validator<T> | Validator<T>[];
 }
-export type ObjectOption<T> = DecoderValidator<T> | ObjectFullOption<T>;
+export type ObjectOption<T> = Validator<T> | ObjectFullOption<T>;
 
 export type ValueError = {
   key: string;

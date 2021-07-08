@@ -1,5 +1,5 @@
 import {
-  DecoderValidator,
+  Validator,
   Context,
   ObjectType,
   ErrorMsg,
@@ -16,7 +16,7 @@ import {
   DecoderFullOption,
 } from './types';
 
-function pipe<T>(validators: DecoderValidator<T>[]) {
+function pipe<T>(validators: Validator<T>[]) {
   return (val: T, context?: Context) => {
     for (const v of validators) {
       const error = v(val, context);
@@ -56,9 +56,7 @@ function identity<T>(val: T): T {
   return val;
 }
 
-function isDecoderValidator<T>(
-  decoderOption: any,
-): decoderOption is DecoderValidator<T> {
+function isValidator<T>(decoderOption: any): decoderOption is Validator<T> {
   return typeof decoderOption === 'function';
 }
 
@@ -67,9 +65,7 @@ function isCustomErrorMsg(decoderOption: any): decoderOption is CustomErrorMsg {
 }
 
 function toFullOption<T>(options: DecoderOption<T> = {}): DecoderFullOption<T> {
-  options = isDecoderValidator<T>(options)
-    ? { validate: pipe([options]) }
-    : options;
+  options = isValidator<T>(options) ? { validate: pipe([options]) } : options;
   options = Array.isArray(options) ? { validate: pipe(options) } : options;
   options = isCustomErrorMsg(options) ? { errorMsg: options } : options;
   if (Array.isArray(options.validate)) {
@@ -95,7 +91,7 @@ function decoder<T, U>({
             (getErrorMsg && getErrorMsg(val, context)) ||
             getDefaultErrorMsg(val, context),
         );
-      if (isDecoderValidator(validate)) {
+      if (isValidator(validate)) {
         const error = validate(val, context);
         if (error) throw new ValidationError(error);
       }
@@ -180,7 +176,7 @@ function object<T extends Schema, U extends MergeIntersection<T>>(
     rawData = isObject(rawData) ? rawData : {};
 
     // convert option to ObjectFullOption
-    option = isDecoderValidator(option) ? { validate: option } : option;
+    option = isValidator(option) ? { validate: option } : option;
     option = isUndefined(option)
       ? defaultOption
       : { ...defaultOption, ...option };
@@ -228,7 +224,7 @@ function object<T extends Schema, U extends MergeIntersection<T>>(
 
 function partial<T extends Schema, U extends PartialMergeIntersection<T>>(
   schema: T,
-  customValidator?: DecoderValidator<{ [K in keyof U]: U[K] }>,
+  customValidator?: Validator<{ [K in keyof U]: U[K] }>,
 ) {
   schema = Object.keys(schema).reduce((a, k) => {
     let aDecoder = schema[k];
@@ -242,9 +238,7 @@ function partial<T extends Schema, U extends PartialMergeIntersection<T>>(
 
 function array<T extends Decoder>(
   schema: T,
-  customValidator?:
-    | DecoderValidator<ReturnType<T>[]>
-    | DecoderValidator<ReturnType<T>[]>[],
+  customValidator?: Validator<ReturnType<T>[]> | Validator<ReturnType<T>[]>[],
 ) {
   return (data: any, context?: Context): ReturnType<T>[] => {
     data = Array.isArray(data) ? data : [undefined];
@@ -297,7 +291,7 @@ function literal<T extends Premitive>(val: T, options?: DecoderOption<T>) {
           `Expected ${serializeValue(val)}, but got ${serializeValue(raw)}.`,
       );
     }
-    if (isDecoderValidator(validate)) {
+    if (isValidator(validate)) {
       const error = validate(val, context);
       if (error) throw new ValidationError(error);
     }
@@ -316,7 +310,7 @@ function union<T extends Decoder[], K extends T[number]>(
     for (const schema of schemas) {
       try {
         val = schema(val, context);
-        if (isDecoderValidator(validate)) {
+        if (isValidator(validate)) {
           const error = validate(val, context);
           if (error) throw new ValidationError(error);
         }
@@ -354,7 +348,7 @@ function dEnum<T extends EnumValues[]>(
             .map((datum) => serializeValue(datum))
             .join(', ')}] but got ${serializeValue(val)}.`,
       );
-    if (isDecoderValidator(validate)) {
+    if (isValidator(validate)) {
       const error = validate(val, context);
       if (error) throw new ValidationError(error);
     }

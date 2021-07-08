@@ -84,7 +84,7 @@ describe('decoder', () => {
     expect(schemaB('abc')).toEqual('abc');
   });
 
-  it('works with DecoderValidator', () => {
+  it('works with Validator', () => {
     const defaultErrorMsg = 'Not a string';
     const str = decoder<string, unknown>({
       typeGuard: (val: unknown): val is string => typeof val === 'string',

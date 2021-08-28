@@ -1,6 +1,8 @@
 export type ErrorMsg = string | Record<string, any>;
+// Split context into ObjectContext and ArrayContext ?
 export type Context = {
   key?: string;
+  raw?: Record<string, any>;
   index?: number;
   schema?: any;
 };

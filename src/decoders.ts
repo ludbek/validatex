@@ -118,7 +118,7 @@ function mapValueError(data: any) {
         : optional(aDecoder.decoder);
       return {
         key,
-        value: actualDecoder(data[key], { key }),
+        value: actualDecoder(data[key], { key, raw: data }),
         error: undefined,
       };
     } catch (e) {
@@ -164,6 +164,12 @@ const dBoolean = decoder<boolean, unknown>({
   typeGuard: (val: unknown): val is boolean => typeof val === 'boolean',
   getDefaultErrorMsg: (val) =>
     `Expected boolean but got ${serializeType(val)}.`,
+  defaultParser: identity,
+});
+
+const date = decoder<Date, unknown>({
+  typeGuard: (val: unknown): val is Date => val instanceof Date,
+  getDefaultErrorMsg: (val) => `Expected Date but got ${serializeType(val)}`,
   defaultParser: identity,
 });
 
@@ -371,4 +377,5 @@ export {
   dEnum as enum,
   literal,
   union,
+  date,
 };

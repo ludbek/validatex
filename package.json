@@ -12,9 +12,7 @@
   "description": "Congrats! You just saved yourself hours of work by bootstrapping this project with TSDX. Let’s get you oriented with what’s here and how to use it.",
   "version": "2.0.0-alpha.8",
   "main": "lib/index.js",
-  "files": [
-    "lib/**/*"
-  ],
+  "files": ["lib/**/*"],
   "directories": {
     "test": "test"
   },
@@ -28,18 +26,11 @@
     "type": "git",
     "url": "git+https://github.com/ludbek/validatex.git"
   },
-  "keywords": [
-    "validator",
-    "schema",
-    "typescript"
-  ],
+  "keywords": ["validator", "schema", "typescript"],
   "author": "suren",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ludbek/validatex/issues"
   },
-  "homepage": "https://github.com/ludbek/validatex#readme",
-  "dependencies": {
-    "zod": "^1.11.17"
-  }
+  "homepage": "https://github.com/ludbek/validatex#readme"
 }

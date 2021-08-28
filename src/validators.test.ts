@@ -20,6 +20,7 @@ describe('email', () => {
       const { key } = context!;
       return `'${key}' has an invalid value '${val}'.`;
     };
+
     const key = 'email';
     const value = 'aninvalid.email';
     const expectedError = `'${key}' has an invalid value '${value}'.`;

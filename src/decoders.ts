@@ -256,7 +256,7 @@ function array<T extends Decoder>(
         processedData.push(schema(datum, { index }));
       } catch (e) {
         if (e.error !== undefined) {
-          errors.push({ index: index, error: e.error });
+          errors.push({ index, error: e.error });
         } else {
           throw e;
         }

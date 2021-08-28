@@ -35,7 +35,7 @@ export function minStr(
   errorMsg?: CustomErrMsg<string, number>,
 ) {
   return (val: string, context?: Context) => {
-    const defaultErrorMsg = `Should be at least ${option} characters`;
+    const defaultErrorMsg = `Should be at least ${option} characters long`;
     if (val.length < option) {
       return getError({
         errorMsg,
@@ -53,7 +53,7 @@ export function maxStr(
   errorMsg?: CustomErrMsg<string, number>,
 ) {
   return (val: string, context?: Context) => {
-    const defaultErrorMsg = `Should be at least ${option} characters`;
+    const defaultErrorMsg = `Should be at least ${option} characters long`;
     if (option < val.length) {
       return getError({
         errorMsg,
@@ -67,7 +67,7 @@ export function maxStr(
 }
 
 export function email(errorMsg?: CustomErrMsg<string, undefined>) {
-  const defaultErrorMsg = 'The email is not valid.';
+  const defaultErrorMsg = 'The email is not valid';
   return (val: string, context?: Context): string | undefined => {
     const emailRegex =
       /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -88,19 +88,16 @@ export function length(
   errorMsg?: CustomErrMsg<string, number>,
 ) {
   return (val: string, context?: Context): string | undefined => {
-    const defaultErrorMsg = `Should be ${option} characters`;
+    const defaultErrorMsg = `Should be ${option} characters long`;
     return val.length !== option
       ? getError({ errorMsg, defaultErrorMsg, val, context, option })
       : undefined;
   };
 }
 
-// minStr
-// maxStr
 // regex
 // minNum
 // maxNum
-// date decoder?
 // dateFormat
 // minDate
 // maxDate

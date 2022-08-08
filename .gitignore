@@ -1,5 +1,4 @@
-.brofile
-.tern-port
-npm-debug.log
-node_modules/
-lib/
+*.log
+.DS_Store
+node_modules
+lib

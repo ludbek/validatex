@@ -30,7 +30,8 @@ export function getError<T, O>({
   return defaultErrorMsg;
 }
 
-export function minStr(
+//validator for minimum string length
+export function minlength(
   option: number,
   errorMsg?: CustomErrMsg<string, number>,
 ) {
@@ -48,7 +49,8 @@ export function minStr(
   };
 }
 
-export function maxStr(
+//validator for maximum string length
+export function maxlength(
   option: number,
   errorMsg?: CustomErrMsg<string, number>,
 ) {

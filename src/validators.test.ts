@@ -1,7 +1,7 @@
 import { Context } from './types';
-import { dateFormat, email, length, max, maxlength, min, minlength, pattern } from './validators';
+import { email, length, max, maxDate, maxlength, min, minDate, minlength, pattern, validateDate } from './validators';
 
-// Email Validator
+ // Email Validator
 describe('email', () => {
   it('returns error if an email is invalid', () => {
     expect(email()('aninvalid.email')).toEqual('The email is not valid');
@@ -35,7 +35,7 @@ describe('email', () => {
   });
 });
 
-// Length validator
+ // Length validator
 describe('length', () => {
   it('returns error', () => {
     const expectedError = `Should be ${5} characters long`;
@@ -69,11 +69,13 @@ describe('length', () => {
   });
 });
 
-// Pattern validator
+ // Pattern validator
 describe('pattern', () => {
   it('returns error', () => {
-    const expectedError = `Invalid characters in input`;
-    expect(pattern(/^[a-b]/)('z')).toEqual(expectedError);
+    const val = 'z';
+    const option = /^[a-b]/;
+    const expectedError = `The value ${val} doen't match the pattern ${option}`;
+    expect(pattern(option)(val)).toEqual(expectedError);
   });
   it('returns undefined', () => {
     expect(pattern(/^[a-z0-9]*$/)('12ba')).toEqual(undefined);
@@ -84,7 +86,7 @@ describe('pattern', () => {
   });
 })
 
-// minlength validator
+ // minlength validator
 describe('minlength', () => {
   it('returns error', () => {
     const expectedError = `Should be at least ${5} characters long`;
@@ -99,10 +101,10 @@ describe('minlength', () => {
   });
 })
 
-// maxlength validator
+ // maxlength validator
 describe('maxlength', () => {
   it('returns error', () => {
-    const length = 3
+    const length = 3;
     const expectedError = `Should be no longer than ${length} characters`;
     expect(maxlength(length)("suku")).toEqual(expectedError);
   });
@@ -115,55 +117,82 @@ describe('maxlength', () => {
   });
 })
 
-// min validator
+ // min validator
 describe('min', () => {
   it('returns error', () => {
-    const digit = 5;
-    const expectedError = `Should be at least ${digit} digits long`;
-    expect(min(digit)(4037)).toEqual(expectedError);
+    const val = 12
+    const minVal = 15;
+    const expectedError = `The entered value: ${val} should be at greater than ${minVal}`;
+    expect(min(minVal)(val)).toEqual(expectedError);
   });
   it('returns undefined', () => {
-    expect(min(5)(348453)).toEqual(undefined);
+    expect(min(15)(17)).toEqual(undefined);
   });
   it('considers errorMsg', () => {
     const errorMsg = 'Custom error.';
-    expect(min(6, errorMsg)(4037)).toEqual(errorMsg);
+    expect(min(6, errorMsg)(5)).toEqual(errorMsg);
   });
 })
 
-// max validator
+ // max validator
 describe('max', () => {
   it('returns error', () => {
-    const digit = 3;
-    const expectedError = `Should be no longer than ${digit} digits`;
-    expect(max(digit)(4037)).toEqual(expectedError);
+    const val = 15;
+    const maxVal = 12;
+    const expectedError = `The entered value: ${val} should be smaller than ${maxVal}`;
+    expect(max(maxVal)(val)).toEqual(expectedError);
   });
   it('returns undefined', () => {
-    expect(max(6)(348453)).toEqual(undefined);
+    expect(max(6)(4)).toEqual(undefined);
   });
   it('considers errorMsg', () => {
-    const digit = 3;
-    const errorMsg = `There must not be more than ${digit} digits)`;
-    expect(max(digit, errorMsg)(4037)).toEqual(errorMsg);
+    const maxVal = 3;
+    const errorMsg = `Number smaller than ${maxVal} is expected`;
+    expect(max(maxVal, errorMsg)(5)).toEqual(errorMsg);
   });
 })
 
-// date format validator
-describe('dateFormat', () => {
+ // date validator
+describe('validateDate', () => {
   it('returns error', () => {
-    const expectedError = `Doesn't match the date format of MM/DD/YYYY`;
-    expect(dateFormat('MM/DD/YYYY')('13/04/2021')).toEqual(expectedError);
-  });
-  it('returns invalid format error', () => {
-    const expectedError = `Invalid date format specified`;
-    expect(dateFormat('MM/DD/YYY')('12/04/2021')).toEqual(expectedError);
+    const expectedError = `The given date is invalid`;
+    expect(validateDate()(new Date("2021/13/4"))).toEqual(expectedError);
   });
   it('returns undefined', () => {
-    expect(dateFormat('MM/DD/YYYY')('12/05/2021')).toEqual(undefined);
+    expect(validateDate()(new Date("2021-12-5"))).toEqual(undefined);
   });
   it('considers errorMsg', () => {
-    const option = 'YYYY/MM/DD';
-    const errorMsg = `The date entered doesn't match the format ${option}`;
-    expect(dateFormat(option, errorMsg)('04/13/2021')).toEqual(errorMsg);
+    const errorMsg = `The date entered doesn't exist.`;
+    expect(validateDate(errorMsg)(new Date("14/5/2021"))).toEqual(errorMsg);
+  });
+})
+
+ // min date validator
+describe('minDate', () => {
+  it('returns error', () => {
+    const expectedError = `The entered date must come after 2021-4-5`;
+    expect(minDate(new Date("2021/4/5"))(new Date("2021/3/4"))).toEqual(expectedError);
+  });
+  it('returns undefined', () => {
+    expect(minDate(new Date("2021/4/5"))(new Date("2021/4/6"))).toEqual(undefined);
+  });
+  it('considers errorMsg', () => {
+    const errorMsg = `The date entered doesn't exist.`;
+    expect(minDate(new Date("2021/4/5"), errorMsg)(new Date("2020/4/6"))).toEqual(errorMsg);
+  });
+})
+
+ // max date validator
+describe('maxDate', () => {
+  it('returns error', () => {
+    const expectedError = `The entered date must come before 2021-4-5`;
+    expect(maxDate(new Date("2021/4/5"))(new Date("2021/6/4"))).toEqual(expectedError);
+  });
+  it('returns undefined', () => {
+    expect(maxDate(new Date("2021/4/5"))(new Date("2020/5/6"))).toEqual(undefined);
+  });
+  it('considers errorMsg', () => {
+    const errorMsg = `The date entered doesn't exist.`;
+    expect(maxDate(new Date("2021/4/5"), errorMsg)(new Date("2022/4/6"))).toEqual(errorMsg);
   });
 })

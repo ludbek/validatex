@@ -31,7 +31,7 @@ export function getError<T, O>({
   return defaultErrorMsg;
 }
 
- //validator for minimum string length
+ // validator for minimum string length
 export function minlength(
   option: number,
   errorMsg?: CustomErrMsg<string, number>,
@@ -50,7 +50,7 @@ export function minlength(
   };
 }
 
- //validator for maximum string length
+ // validator for maximum string length
 export function maxlength(
   option: number,
   errorMsg?: CustomErrMsg<string, number>,
@@ -161,14 +161,14 @@ export function validateDate(
   errorMsg?: CustomErrMsg<Date, undefined>,
 ) {
   return (val: Date, context?: Context): string | undefined => {
-    let defaultErrorMsg = `The given date is invalid`
+    const defaultErrorMsg = `The given date is invalid`
     
     const date = parseDate(val);
     const day = date[0];
     const month = date[1];
     const year = date[2];
 
-     //Check the ranges of month and year
+     // Check the ranges of month and year
     if(year < 1000 || year > 3000 || month === 0 || month > 12)
       return getError({ errorMsg, defaultErrorMsg, val, context, option:undefined })
 
@@ -193,10 +193,10 @@ export function minDate(
   errorMsg?: CustomErrMsg<Date, undefined>,
 ) {
   return (val: Date, context?: Context): string | undefined => {
-    const minDate = parseDate(option);
-    const minDay = minDate[0];
-    const minMonth = minDate[1];
-    const minYear = minDate[2];
+    const minimum = parseDate(option);
+    const minDay = minimum[0];
+    const minMonth = minimum[1];
+    const minYear = minimum[2];
 
     const defaultErrorMsg = `The entered date must come after ${minYear}-${minMonth}-${minDay}`
 
@@ -232,10 +232,10 @@ export function maxDate(
   errorMsg?: CustomErrMsg<Date, undefined>,
 ) {
   return (val: Date, context?: Context): string | undefined => {
-    const maxDate = parseDate(option);
-    const maxDay = maxDate[0];
-    const maxMonth = maxDate[1];
-    const maxYear = maxDate[2];
+    const maximum = parseDate(option);
+    const maxDay = maximum[0];
+    const maxMonth = maximum[1];
+    const maxYear = maximum[2];
 
     const defaultErrorMsg = `The entered date must come before ${maxYear}-${maxMonth}-${maxDay}`
 

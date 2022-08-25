@@ -104,9 +104,9 @@ describe('minlength', () => {
  // maxlength validator
 describe('maxlength', () => {
   it('returns error', () => {
-    const length = 3;
-    const expectedError = `Should be no longer than ${length} characters`;
-    expect(maxlength(length)("suku")).toEqual(expectedError);
+    const len = 3;
+    const expectedError = `Should be no longer than ${len} characters`;
+    expect(maxlength(len)("suku")).toEqual(expectedError);
   });
   it('returns undefined', () => {
     expect(maxlength(6)("summit")).toEqual(undefined);

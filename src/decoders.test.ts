@@ -13,6 +13,7 @@ import v, {
   literal,
   union,
   TypeOf,
+  date,
 } from './index';
 
 const maxError = 'It must be at most 4 characters long.';
@@ -163,6 +164,27 @@ describe('boolean', () => {
     const boolSchema = boolean();
     expect(boolSchema(false)).toEqual(false);
     expect(boolSchema(true)).toEqual(true);
+  });
+});
+
+describe('date', () => {
+  it('throws an error if a value is not Date', () => {
+    function run() {
+      return date()(1)
+    }
+    expect(run).toThrow('Expected Date but got number.');
+  });
+
+  it('throws an error if a value is an invalid Date', () => {
+    function run() {
+      return date()(new Date("2001-13-05"))
+    }
+    expect(run).toThrow('Expected Date but got object.');
+  });
+
+  it('returns value if it is a Date', () => {
+    const iso = new Date("2001-04-05");
+    expect(date()(new Date("2001-04-05"))).toEqual(iso);
   });
 });
 

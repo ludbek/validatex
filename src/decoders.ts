@@ -167,11 +167,14 @@ const dBoolean = decoder<boolean, unknown>({
   defaultParser: identity,
 });
 
+ // moving the dateValidator logic to here
 const date = decoder<Date, unknown>({
-  typeGuard: (val: unknown): val is Date => val instanceof Date,
-  getDefaultErrorMsg: (val) => `Expected Date but got ${serializeType(val)}`,
+  typeGuard: (val: unknown): val is Date => val instanceof Date && val.toDateString() != "Invalid Date",
+  getDefaultErrorMsg: (val) => `Expected Date but got ${serializeType(val)}.`,
   defaultParser: identity,
 });
+
+
 
 const defaultOption = { strict: true, unknownFieldErrorMsg: 'Unknown field.' };
 function object<T extends Schema, U extends MergeIntersection<T>>(
@@ -263,7 +266,7 @@ function array<T extends Decoder>(
       }
     });
 
-    if (errors.length !== 0) {
+    if (errors.length !== 0) {  
       throw new ValidationError(errors);
     }
     if (Array.isArray(customValidator)) {

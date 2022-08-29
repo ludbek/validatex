@@ -1,5 +1,5 @@
 import { Context } from './types';
-import { email, length, max, maxDate, maxlength, min, minDate, minlength, pattern, validateDate } from './validators';
+import { email, length, max, maxDate, maxlength, min, minDate, minlength, pattern } from './validators';
 
  // Email Validator
 describe('email', () => {
@@ -122,7 +122,7 @@ describe('min', () => {
   it('returns error', () => {
     const val = 12
     const minVal = 15;
-    const expectedError = `The entered value: ${val} should be at greater than ${minVal}`;
+    const expectedError = `Value ${val} should be greater than ${minVal}`;
     expect(min(minVal)(val)).toEqual(expectedError);
   });
   it('returns undefined', () => {
@@ -139,7 +139,7 @@ describe('max', () => {
   it('returns error', () => {
     const val = 15;
     const maxVal = 12;
-    const expectedError = `The entered value: ${val} should be smaller than ${maxVal}`;
+    const expectedError = `Value ${val} should be smaller than ${maxVal}`;
     expect(max(maxVal)(val)).toEqual(expectedError);
   });
   it('returns undefined', () => {
@@ -153,24 +153,24 @@ describe('max', () => {
 })
 
  // date validator
-describe('validateDate', () => {
-  it('returns error', () => {
-    const expectedError = `The given date is invalid`;
-    expect(validateDate()(new Date("2021/13/4"))).toEqual(expectedError);
-  });
-  it('returns undefined', () => {
-    expect(validateDate()(new Date("2021-12-5"))).toEqual(undefined);
-  });
-  it('considers errorMsg', () => {
-    const errorMsg = `The date entered doesn't exist.`;
-    expect(validateDate(errorMsg)(new Date("14/5/2021"))).toEqual(errorMsg);
-  });
-})
+// describe('validateDate', () => {
+//   it('returns error', () => {
+//     const expectedError = `The given date is invalid`;
+//     expect(validateDate()("2001-13-05")).toEqual(expectedError);
+//   });
+  // it('returns undefined', () => {
+  //   expect(validateDate()(new Date("2021-12-5"))).toEqual(undefined);
+  // });
+  // it('considers errorMsg', () => {
+  //   const errorMsg = `The date entered doesn't exist.`;
+  //   expect(validateDate(errorMsg)(new Date("14/5/2021"))).toEqual(errorMsg);
+  // });
+// })
 
  // min date validator
 describe('minDate', () => {
   it('returns error', () => {
-    const expectedError = `The entered date must come after 2021-4-5`;
+    const expectedError = `The entered date must come after Mon Apr 05 2021`;
     expect(minDate(new Date("2021/4/5"))(new Date("2021/3/4"))).toEqual(expectedError);
   });
   it('returns undefined', () => {
@@ -185,7 +185,7 @@ describe('minDate', () => {
  // max date validator
 describe('maxDate', () => {
   it('returns error', () => {
-    const expectedError = `The entered date must come before 2021-4-5`;
+    const expectedError = `The entered date must come before Mon Apr 05 2021`;
     expect(maxDate(new Date("2021/4/5"))(new Date("2021/6/4"))).toEqual(expectedError);
   });
   it('returns undefined', () => {

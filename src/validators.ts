@@ -1,3 +1,4 @@
+import { number } from './decoders';
 import { Decoder, ErrorMsg, Context, TypeOf } from './types';
 
 export type GetErrorMsg<T, O> = ({
@@ -30,7 +31,8 @@ export function getError<T, O>({
   return defaultErrorMsg;
 }
 
-export function minStr(
+ // validator for minimum string length
+export function minlength(
   option: number,
   errorMsg?: CustomErrMsg<string, number>,
 ) {
@@ -48,12 +50,13 @@ export function minStr(
   };
 }
 
-export function maxStr(
+ // validator for maximum string length
+export function maxlength(
   option: number,
   errorMsg?: CustomErrMsg<string, number>,
 ) {
   return (val: string, context?: Context) => {
-    const defaultErrorMsg = `Should be at least ${option} characters long`;
+    const defaultErrorMsg = `Should be no longer than ${option} characters`;
     if (option < val.length) {
       return getError({
         errorMsg,
@@ -96,11 +99,81 @@ export function length(
 }
 
 // regex
-// minNum
-// maxNum
-// dateFormat
-// minDate
-// maxDate
+export function pattern(
+  option: RegExp,
+  errorMsg?: CustomErrMsg<string, RegExp>
+){
+  return(val: string, context?: Context): string | undefined => {
+    const defaultErrorMsg = `The value ${val} doen't match the pattern ${option}`;
+    return option.test(val)
+      ?undefined
+      :getError({
+        errorMsg,
+        defaultErrorMsg,
+        val,
+        context,
+        option,
+      });
+  }
+}
+
+ // validator for minimum no of digits in a number
+export function min(
+  option: number,
+  errorMsg?: CustomErrMsg<number, number>,
+) {
+  return (val: number, context?: Context): string | undefined => {
+    const defaultErrorMsg = `Value ${val} should be greater than ${option}`;
+    return val < option
+      ? getError({ errorMsg, defaultErrorMsg, val, context, option })
+      : undefined 
+  }
+}
+
+ // validator for maximum no of digits in a number
+export function max(
+  option: number,
+  errorMsg?: CustomErrMsg<number, number>,
+) {
+  return (val: number, context?: Context): string | undefined => {
+    const defaultErrorMsg = `Value ${val} should be smaller than ${option}`;
+    return val > option
+      ? getError({ errorMsg, defaultErrorMsg, val, context, option })
+      : undefined 
+  }
+}
+
+ // minDate
+export function minDate(
+  option : Date,
+  errorMsg?: CustomErrMsg<Date, Date>,
+) {
+  return (val: Date, context?: Context): string | undefined => {
+    const defaultErrorMsg = `The entered date must come after ${option.toDateString()}`
+    
+    if (option <= val){
+      return undefined;
+    } else {
+      return getError({ errorMsg, defaultErrorMsg, val, context, option })
+    }
+  }
+}
+
+ // maxDate
+export function maxDate(
+  option : Date,
+  errorMsg?: CustomErrMsg<Date, Date>,
+) {
+  return (val: Date, context?: Context): string | undefined => {
+    const defaultErrorMsg = `The entered date must come before ${option.toDateString()}`
+
+    if (option >= val){
+      return undefined;
+    } else {
+      return getError({ errorMsg, defaultErrorMsg, val, context, option })
+    }
+  }
+}
 
 export type ValidationSuccess<T> = { success: true; data: T };
 export type ValidationFailure = { success: false; error: ErrorMsg };

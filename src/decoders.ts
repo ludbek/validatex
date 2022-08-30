@@ -168,10 +168,19 @@ const dBoolean = decoder<boolean, unknown>({
 });
 
 const date = decoder<Date, unknown>({
-  typeGuard: (val: unknown): val is Date => val instanceof Date,
-  getDefaultErrorMsg: (val) => `Expected Date but got ${serializeType(val)}`,
-  defaultParser: identity,
+  typeGuard: (val: unknown): val is Date => {
+    return val instanceof Date && !isNaN(val.valueOf())
+  },
+  getDefaultErrorMsg: (val) => `Expected Date but got ${serializeType(val)}.`,
+  defaultParser: (val: unknown) => {
+    if (typeof val === 'string') {
+      return new Date(val)
+    }
+    return val
+  }
 });
+
+
 
 const defaultOption = { strict: true, unknownFieldErrorMsg: 'Unknown field.' };
 function object<T extends Schema, U extends MergeIntersection<T>>(
@@ -263,7 +272,7 @@ function array<T extends Decoder>(
       }
     });
 
-    if (errors.length !== 0) {
+    if (errors.length !== 0) {  
       throw new ValidationError(errors);
     }
     if (Array.isArray(customValidator)) {

@@ -187,6 +187,26 @@ describe('date', () => {
     expect(date()(new Date("04-05-2001"))).toEqual(iso);
     expect(date()("04-05-2001")).toEqual(iso);
   });
+
+  it('works with decoder full option', () => {
+    const customErrorMsg = "Should be a date or string"
+    const dateDecode = date({
+      parse(val) {
+        console.log(val)
+        if (typeof val === 'string') {
+          return new Date(val)
+        }
+        return val
+      },
+      errorMsg: customErrorMsg,
+    });
+    expect(dateDecode(new Date("2001-04-05"))).toEqual(new Date("2001-04-05"));
+    // it parses
+    expect(dateDecode("2001-04-05")).toEqual(new Date("2001-04-05"));
+    // respects customErrorMsg
+    expect(dateDecode.bind(dateDecode, 1)).toThrow(customErrorMsg);
+    expect(dateDecode.bind(dateDecode, "2001-13-05")).toThrow(customErrorMsg);
+  })
 });
 
 describe('object', () => {

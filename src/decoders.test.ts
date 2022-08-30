@@ -192,7 +192,6 @@ describe('date', () => {
     const customErrorMsg = "Should be a date or string"
     const dateDecode = date({
       parse(val) {
-        console.log(val)
         if (typeof val === 'string') {
           return new Date(val)
         }

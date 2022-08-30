@@ -167,23 +167,17 @@ const dBoolean = decoder<boolean, unknown>({
   defaultParser: identity,
 });
 
-function dateValidator<T>(val:T): T | Date{
-  if (typeof val === 'string') {
-    return new Date(val)
-  }
-  return val
-}
-
- // moving the dateValidator logic to here
 const date = decoder<Date, unknown>({
   typeGuard: (val: unknown): val is Date => {
-    if (typeof val === 'string') {
-      val = new Date(val)
-    }
     return val instanceof Date && !isNaN(val.valueOf())
   },
   getDefaultErrorMsg: (val) => `Expected Date but got ${serializeType(val)}.`,
-  defaultParser: dateValidator
+  defaultParser: (val: unknown) => {
+    if (typeof val === 'string') {
+      return new Date(val)
+    }
+    return val
+  }
 });
 
 

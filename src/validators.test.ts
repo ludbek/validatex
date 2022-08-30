@@ -152,21 +152,6 @@ describe('max', () => {
   });
 })
 
- // date validator
-// describe('validateDate', () => {
-//   it('returns error', () => {
-//     const expectedError = `The given date is invalid`;
-//     expect(validateDate()("2001-13-05")).toEqual(expectedError);
-//   });
-  // it('returns undefined', () => {
-  //   expect(validateDate()(new Date("2021-12-5"))).toEqual(undefined);
-  // });
-  // it('considers errorMsg', () => {
-  //   const errorMsg = `The date entered doesn't exist.`;
-  //   expect(validateDate(errorMsg)(new Date("14/5/2021"))).toEqual(errorMsg);
-  // });
-// })
-
  // min date validator
 describe('minDate', () => {
   it('returns error', () => {

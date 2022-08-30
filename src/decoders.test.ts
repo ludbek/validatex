@@ -170,21 +170,22 @@ describe('boolean', () => {
 describe('date', () => {
   it('throws an error if a value is not Date', () => {
     function run() {
-      return date()(1)
+      return date()(344037)
     }
     expect(run).toThrow('Expected Date but got number.');
   });
 
   it('throws an error if a value is an invalid Date', () => {
     function run() {
-      return date()(new Date("2001-13-05"))
+      return date()("2001-13-05")
     }
     expect(run).toThrow('Expected Date but got object.');
   });
 
   it('returns value if it is a Date', () => {
-    const iso = new Date("2001-04-05");
-    expect(date()(new Date("2001-04-05"))).toEqual(iso);
+    const iso = new Date("04-05-2001");
+    expect(date()(new Date("04-05-2001"))).toEqual(iso);
+    expect(date()("04-05-2001")).toEqual(iso);
   });
 });
 

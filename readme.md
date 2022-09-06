@@ -1,163 +1,90 @@
-# validatex
-A simple yet powerful data validator for Javascript/Typescript.
+![](./media/ValidateX.png)
+![](./media/made-with-typescript.svg)
+![](https://img.shields.io/github/last-commit/ludbek/validatex?color=blue&style=flat-square) ![](https://img.shields.io/github/v/release/ludbek/validatex)
+
+**A simple yet powerful JavaScript/TypeScript data validator.**
+
+___
+**Table of contents**
+
+[TOC]
+___
 
 ## [v1.x doc](https://github.com/ludbek/validatex/tree/v1.0.2)
 
 ## Migration from v1.x to v2.x
+___
 
-## Features
-- functions as decoders/validators
-- supports Typescript
-- static type inference
-- easy to extend
-- easy to create custom decoders/validators
+## Installation
+This should be installed as one of your project dependencies :
+```bash
+  npm -i validatex
+```
+or
+```bash
+  yarn add validatex
+```
+___
+## Usage
+
+___
+
+## Key Features
+
+___
 
 ## Kitchen Sink
-```typescript
-import v, { Typeof } from 'validatex'
 
-const userSchema = v.array(
-  v.object({
-    name: v.string(),
-    mobile: v.toggle(v.number()),
-    address: v.partial({
-      postcode: v.number(),
-      street1: v.string(),
-      street2: v.toggle(v.string()),
-    }),
-  }),
-);
-
-type UserSchema = Typeof<typeof userSchema>
-// Runtime type
-//type UserSchema = {
-//    mobile?: number | undefined;
-//    name: string;
-//    address: {
-//        street2: string;
-//        postcode?: number | undefined;
-//        street1?: string | undefined;
-//    };
-//}[]
-
-// if a valid data is given to the schema it returns it back
-const value1 = [
-  {
-    name: 'foo',
-    mobile: 1234567890,
-    address: {
-      postcode: 1,
-      street1: 'street 1',
-      street2: 'street 2',
-    },
-  },
-];
-expect(userSchema(value1)).toEqual(value1);
-
-// if an invalid data is given to the schema it throws an error
-const value2 = [
-  {
-    name: 'foo',
-    mobile: 1234567890,
-    address: {
-      postcode: 1,
-      street1: 'street 1',
-      street2: 'street 2',
-    },
-  },
-  {
-    address: { street1: 'street 1' },
-  },
-];
-
-// the root of the schema is an array, so is the root of the error
-const expectedError = JSON.stringify([
-  {
-    "index":1,
-    "error": {
-      "name":"Expected string but got undefined.",
-      "address": {
-        "street2":"Expected string but got undefined."
-      }
-    }
-  }
-]);
-expect(() => userSchema(userSchema, value2).toThrow(expectedError);
-```
+___
 
 ## Core concepts
-### Decoders
-Decoder is a function that parses unkown value, validates it and returns a known value. A decoder has following signature.
+#### Decoders
 
-```typescript
-(val: unknown, context?: Context | undefined) => T
-```
-### Context
-```typescript
-type Context = {
-    key?: string | undefined;
-    index?: number | undefined;
-    schema?: any;
-}
-```
 
-### Compose complex decoder
+#### Compose complex decoder
 
-### Validators
-Validator is a function as its name suggests validates a known value. It returns an error if a value is invalid else returns nothing. A decoder uses 1 or many validators to validate a known value.
+#### Validators
 
-```typescript
-(val: T, context?: Context | undefined) => string | Record<string, string> | undefined
-```
 
-### Static type inference
-```typescript
-import v, { TypeOf } from 'validatex'
+#### Static type inference
 
-const loginSchema = v.object({
-  username: v.string(),
-  password: v.string()
-})
+___
 
-type LoginSchema = TypeOf<typeof loginSchema>
-// type LoginSchema = {
-//     username: string;
-//     password: string;
-// }
-```
+## Built-In decoders
+#### String
 
-## Builtin decoders
-### string
-```typescript
-(options?: DecoderOption<string>) => (val: any, context?: Context | undefined) => string
-```
 
-```typescript
-const name = v.string()
-```
+##### Validate
 
-#### Validate
+##### Parse
 
-```typescript
-function alphaNumeric(val: string) {
-  return /[a-zA-Z][\da-zA-Z]+/.test(val) ? undefined : 'Must be alpha numeric.';
-}
+##### Custom error message
 
-const username = v.string(alphaNumeric);
-expect(username('user1')).toEqual('user1');
+#### Number
 
-expect(() => username('123')).toThrow('Must be alpha numeric.');
-```
+#### Boolean
 
-#### Parse
+#### Date
 
-#### Custom error message
+#### Literal
 
-### number
-### boolean
-### literal
-### object
-### partial
-### array
-### enum
-### union
+#### object
+
+#### partial
+#### array
+#### enum
+#### union
+
+___
+
+## Built-In validators
+
+#### minlength
+#### maxlength
+#### email
+#### length
+#### pattern
+#### min
+#### max
+#### minDate
+#### maxDate

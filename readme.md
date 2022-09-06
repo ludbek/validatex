@@ -6,6 +6,7 @@
 
 ___
 **Table of contents**
+
 [TOC]
 ___
 
@@ -76,7 +77,7 @@ ___
 
 ___
 
-## In-build validators
+## Built-In validators
 
 #### minlength
 #### maxlength

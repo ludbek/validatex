@@ -3,11 +3,6 @@
 ![](https://img.shields.io/github/last-commit/ludbek/validatex?color=blue&style=flat-square) ![](https://img.shields.io/github/v/release/ludbek/validatex)
 
 **A simple yet powerful JavaScript/TypeScript data validator.**
-
-___
-**Table of contents**
-
-[TOC]
 ___
 
 ## [v1.x doc](https://github.com/ludbek/validatex/tree/v1.0.2)
@@ -44,11 +39,11 @@ import v, { Typeof } from 'validatex'
 
 const userSchema = v.array(
   v.object({
-    name: v.string(),
-    mobile: v.toggle(v.number()),
+    name: v.string(v.minlenth(1)),
+    mobile: v.toggle(v.number(v.max(9999999999))),
     address: v.partial({
       postcode: v.number(),
-      street1: v.string(),
+      street1: v.string(v.minlenth(1)),
       street2: v.toggle(v.string()),
     }),
   }),
@@ -160,7 +155,7 @@ The **string** decoder parses unknown value, validates if its a string and retur
 
 The signature of string decoder looks like:
 ```typescript
-(options?: DecoderOption<string>) => (val: any, context?: Context | undefined) => string
+(options?: DecoderOption<string>) => (val: unknown, context?: Context | undefined) => string
 ```
 
 ```typescript
@@ -206,7 +201,7 @@ expect(username.bind(username, 1)).toThrow(customErrorMsg);
 #### Number
 The **number** decoder takes an unknown value, validates if its a number and returns an error or a number depending on the outcome of the validation.
 ```typescript
-(options?: DecoderOption<number>) => (val: any, context?: Context | undefined) => number
+(options?: DecoderOption<number>) => (val: unknown, context?: Context | undefined) => number
 ```
 
 ```typescript
@@ -219,7 +214,7 @@ expect(() => age("twenty")).toThrow('Expected number but got string.');
 #### Boolean
 The **boolean** decoder takes an unknown value, validates if its a boolean and returns an error or a number depending on the outcome of the validation.
 ```typescript
-(options?: DecoderOption<boolean>) => (val: any, context?: Context | undefined) => boolean
+(options?: DecoderOption<boolean>) => (val: unknown, context?: Context | undefined) => boolean
 ```
 
 ```typescript
@@ -232,7 +227,7 @@ expect(() => married(1)).toThrow('Expected boolean but got number.');
 #### Date
 The **date** decoder takes an unknown value, validates if its a date object and returns an error or a Date depending on the outcome of the validation.
 ```typescript
-(options?: DecoderOption<Date>) => (val: any, context?: Context | undefined) => Date
+(options?: DecoderOption<Date>) => (val: unknown, context?: Context | undefined) => Date
 ```
  If the unknown value is string, it parses the string to a date object. The decoder will return a date object only if the input is a valid date else return an error that says "Expected Date but got object."
 
@@ -251,7 +246,7 @@ expect(() => dateOfBirth(2001)).toThrow("Expected Date but got number.");
 ```
 
 #### Literal
-The **literal** decoder parses an unknown value, validates if its value of type Premitive and returns an error or a Premitive value depending on the outcome of the validation. 
+The **literal** decoder parses an any value, validates if its value of type Premitive and returns an error or a Premitive value depending on the outcome of the validation. 
 
 The type Premitive looks like :
 ```typescript
@@ -260,7 +255,7 @@ type Premitive = string | number | boolean | null | undefined;
 
 **Signature of literal decoder**
 ```typescript
-(options?: DecoderOption<Premitive>) => (val: any, context?: Context | undefined) => Premitive
+(val: T, options?: DecoderOption<Premitive>) => (val: any, context?: Context | undefined) => Premitive
 ```
 
 ```typescript
@@ -270,13 +265,15 @@ expect(apple('apple')).toEqual('apple');
 expect(() => apple('banana')).toThrow(`Expected 'apple', but got 'banana'.`);
 ```
 
-#### object
+#### Object
+The **object** decoder parses any value, validates if its value is of type Schema and returns an error or a Schema value depending on the outcome of the validation.
+
 ```typescript
 type Schema = Record<string, Decoder | Switch<any>>;
 ```
-
+**Signature of object decoder**
 ```typescript
-(option?: ObjectOption<{ [K in keyof U]: U[K] }>) => (rawData: any, context?: Context) => Schema
+(schema: T, option?: ObjectOption<Schema>) => (rawData: any, context?: Context) => Schema
 ```
 
 
@@ -308,11 +305,119 @@ const data = {
 expect(userSchema.bind(userSchema, data)).toThrow(`{"unknownField1":"Unknown field.","unknownField2":"Unknown field."}`)
 ```
 
-#### partial
-#### array
-#### enum
-#### union
+#### Partial
 
+```typescript
+(schema: T, option?: Validator<Schema>) => (val: any, context?: Context) => Schema
+```
+```typescript
+// making all fields optional
+const userSchema = partial({
+username: string(),
+password: string(),
+});
+expect(userSchema({})).toEqual({});
+
+// working with toggle
+const userSchema = partial({
+  username: string(),
+  password: toggle(string()),
+});
+expect(userSchema.bind(userSchema, {})).toThrow('');
+```
+
+#### Array
+The **array** decoder parses any value, validates if its value is of type Arrary and returns an error or an Array value depending on the outcome of the validation.
+```typescript
+type Decoder = (value: any, context?: Context) => any;
+```
+**Signature of object decoder**
+```typescript
+(schema: T, option?: Validator<ReturnType<T>[]>) => (val: any, context?: Context) => Array
+```
+
+```typescript
+const namesSchema = array(string());
+const value = ['foo', 'bar'];
+// valid value
+expect(namesSchema(value)).toEqual(value);
+
+const value = [1, undefined];
+const expectedError = [
+  { index: 0, error: 'Expected string but got number.' },
+  { index: 1, error: 'Expected string but got undefined.' },
+];
+// invalid value
+expect(namesSchema.bind(namesSchema, value)).toThrow(
+  JSON.stringify(expectedError),
+);
+
+const expectedError = [
+  { index: 0, error: 'Expected string but got undefined.' },
+];
+// Non-array value
+expect(namesSchema.bind(namesSchema, undefined)).toThrow(
+  JSON.stringify(expectedError),
+);
+
+const expectedError = [
+  { index: 0, error: 'Expected string but got undefined.' },
+];
+// empty array validation
+expect(namesSchema.bind(namesSchema, [])).toThrow(
+  JSON.stringify(expectedError),
+);
+
+// custom validation
+const expectedError = `Only 2 items are allowed`;
+function allowOnly2(values: string[]) {
+  if (values.length > 2) return expectedError;
+}
+const namesSchema = array(string(), allowOnly2);
+expect(namesSchema.bind(namesSchema, ['a', 'b', 'c', 'd'])).toThrow(
+  expectedError,
+);
+```
+
+#### Enum
+The **enum** decoder parses any value, validates if its value is of type EnumValues and returns an error or a EnumValues value depending on the outcome of the validation.
+```typescript
+type EnumValues = string | number | boolean;
+```
+**Signature of object decoder**
+```typescript
+(values: [...T], option?: DecoderOption<T>) => (val: unknown, context?: Context) => EnumValues
+```
+
+```Typescript
+const fruits = v.enum(['apple', 'banana']);
+
+// valid value
+const apple = 'apple';
+expect(fruits(apple)).toEqual(apple);
+
+// invalid value
+const expectedError = `Expected one of ['apple', 'banana'] but got 'tomato'.`;
+expect(() => fruits('tomato')).toThrow(expectedError);
+```
+
+#### Union
+```typescript
+(schemas: T, option?: DecoderOption<K>) => (val: unknown, context?: Context) => T
+```
+
+```typescript
+const alphaNumeric = union([string(), number()]);
+
+// valid values
+expect(alphaNumeric('a')).toEqual('a');
+expect(alphaNumeric(1)).toEqual(1);
+
+// invalid value
+expect(() => alphaNumeric(true)).toThrow(
+  'The value did not match any of the given schemas.',
+);
+```
 ___
 
 ## In-build validators

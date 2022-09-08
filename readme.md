@@ -114,7 +114,7 @@ Decoder is a function that parses unkown value, validates it and returns a known
 ```typescript
 (val: unknown, context?: Context | undefined) => T
 ```
-#### Context
+**Context**
 [//]: <> (Context should be documented here.)
 ```typescript
 type Context = {
@@ -125,7 +125,68 @@ type Context = {
 }
 ```
 
-#### Compose complex decoder
+##### Without any option
+```typescript
+const defaultErrorMsg = 'Not a string';
+const str = decoder<string, unknown>({
+  typeGuard: (val: unknown): val is string => typeof val === 'string',
+  getDefaultErrorMsg: () => defaultErrorMsg,
+  defaultParser: identity,
+});
+
+const nameSchema = str();
+expect(nameSchema('foo')).toEqual('foo');
+expect(nameSchema.bind(nameSchema, 1)).toThrow(defaultErrorMsg);
+```
+
+##### With DecoderFullOptions
+```typescript
+const defaultErrorMsg = 'Not a string';
+const customErrorMsg = 'It should be a string.';
+const customValidationErrorMsg = "must not contain '-'.";
+const str = decoder<string, unknown>({
+  typeGuard: (val: unknown): val is string => typeof val === 'string',
+  getDefaultErrorMsg: () => defaultErrorMsg,
+  defaultParser: identity,
+});
+const alphaNumSchema = str({
+  parse(val) {
+    if (typeof val === 'string' || typeof val === 'number') return `${val}`;
+    return val;
+  },
+  validate(val, { key } = { key: undefined }) {
+    if (val.includes('-')) return `${key} ${customValidationErrorMsg}`;
+  },
+  errorMsg: customErrorMsg,
+});
+expect(alphaNumSchema('valid string')).toEqual('valid string');
+// it parses
+expect(alphaNumSchema(1)).toEqual('1');
+// it respects custom error msg
+expect(alphaNumSchema.bind(alphaNumSchema, true)).toThrow(customErrorMsg);
+// it respects custom validator
+expect(
+  alphaNumSchema.bind(alphaNumSchema, 'hello-there', { key: 'akey' }),
+).toThrow(customValidationErrorMsg);
+
+// it respects getErrorMsg
+const schema = str({
+  getErrorMsg: (val, { key } = { key: undefined }) => {
+    return `${key} must not be ${val}`;
+  },
+});
+expect(schema.bind(schema, 1, { key: 'akey' })).toThrow(
+  'akey must not be 1',
+);
+
+// it accepts an array of validators
+const schemaB = str({ validate: [isSingleWord, max5] });
+expect(schemaB.bind(schemaB, 'kathmandu')).toThrow(maxError);
+expect(schemaB.bind(schemaB, 'new road')).toThrow(singleWordError);
+expect(schemaB('abc')).toEqual('abc');
+```
+
+[//]: <> (Compose complex decoders should be documented here.)
 
 #### Validators
 Validator is a function that validates a known value as its name suggests . It returns an error if a value is invalid else returns nothing. A decoder uses 1 or many validators to validate a known value.

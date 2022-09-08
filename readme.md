@@ -115,9 +115,11 @@ Decoder is a function that parses unkown value, validates it and returns a known
 (val: unknown, context?: Context | undefined) => T
 ```
 #### Context
+[//]: <> (Context should be documented here.)
 ```typescript
 type Context = {
     key?: string | undefined;
+    raw?: Record<string, any>;
     index?: number | undefined;
     schema?: any;
 }
@@ -150,16 +152,24 @@ type LoginSchema = TypeOf<typeof loginSchema>
 ___
 
 ## Built-In decoders
-#### String
-The **string** decoder parses unknown value, validates if its a string and returns an error or a string value on the basis of the validation.
+### String
+The **string** decoder parses unknown value, validates it and returns an error or a string value on the basis of the validation.
 
 The signature of string decoder looks like:
 ```typescript
 (options?: DecoderOption<string>) => (val: unknown, context?: Context | undefined) => string
 ```
-
 ```typescript
 const name = v.string()
+```
+
+##### DecoderOption
+```typescript
+type DecoderOption<T> =
+  | Validator<T>
+  | Validator<T>[]
+  | CustomErrorMsg
+  | DecoderFullOption<T>;
 ```
 
 ##### Validate
@@ -175,20 +185,6 @@ expect(username('user1')).toEqual('user1');
 expect(() => username('123')).toThrow('Must be alpha numeric.');
 ```
 
-##### Parse
-```typescript
-function parse(val: string) {
-  if (typeof val === 'string' || typeof val === 'number') return `${val}`;
-  return val;
-}
-
-const username = v.string(parse);
-
-expect(username('user1')).toEqual('user1');
-// parses value to string if its a number
-expect(username(123)).toEqual('123');
-```
-
 ##### Custom error message
 ```typescript
 const customErrMsg = "This is a custom error message";
@@ -198,8 +194,122 @@ const username = v.string(customErrMsg);
 expect(username.bind(username, 1)).toThrow(customErrorMsg);
 ```
 
-#### Number
-The **number** decoder takes an unknown value, validates if its a number and returns an error or a number depending on the outcome of the validation.
+#### **Built-in Validators for String**
+
+#### minlength
+The **minlength()** validates the minimum length of textual data. It takes two parameters, *size* and *customError*.
+
+```typescript
+minLength(size, customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *size* | number | It is the minimum length of textual data. It accepts a number. |
+| *customError* | string | It is the customized error. If a customized error isn't passed into the validator then it return default error message. |
+
+
+
+```typescript
+// Invalid value
+expect(minlength(5)("suku")).toEqual(`Should be at least 5 characters long`);
+// Valid value
+expect(minlength(5)("summit")).toEqual(undefined);
+
+// Passing customError
+const errorMsg = 'Custom error.';
+expect(minlength(6, errorMsg)("suku")).toEqual(errorMsg);
+```
+
+#### maxlength
+The **maxlength()** validates the minimum length of textual data. It takes two parameters, *size* and *customError*.
+
+```typescript
+maxLength(size, customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *size* | number | It is the maximum length of textual data. It accepts a number. |
+
+
+
+```typescript
+// Invalid value
+expect(maxlength(3)("suku")).toEqual(`Should be no longer than ${len} characters`.);
+// Valid value
+expect(maxlength(6)("summit")).toEqual(undefined);
+
+// Passing customError
+const errorMsg = 'Custom error.';
+expect(maxlength(3, errorMsg)("suku")).toEqual(errorMsg);
+```
+
+#### email
+The **email** validator checks if a value is a valid email or not. It only takes *customError* as a parameter.
+
+```typescript
+maxLength(customError?)
+```
+
+```typescript
+// Invalid value
+expect(email()('aninvalid.email')).toEqual('The email is not valid');
+// Valid value
+expect(email()('someone@somewhere.com')).toEqual(undefined);
+
+// Passing customError
+const errorMsg = 'Custom error.';
+expect(email(errorMsg)('aninvalid.email')).toEqual(errorMsg);
+```
+
+#### length
+The **length** validator validates the exact length of the textual data. The two parameters of this validator are : *size* and *customError*.
+
+```typescript
+length(size, customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *size* | number | It represents the exact length of the textual data. |
+
+
+```typescript
+// Invalid value
+const expectedError = `Should be 5 characters long`;
+expect(length(5)('1234')).toEqual(expectedError);expect(length(5)('1234')).toEqual(expectedError);
+// Valid value
+expect(length(1)('1')).toEqual(undefined);
+
+// Passing customError
+const errorMsg = 'Custom error.';
+expect(length(5, errorMsg)('1')).toEqual(errorMsg);
+```
+
+#### pattern
+The **pattern** validator checks if a value matches a specific pattern. It takes two parameters: *regex* and *customError*.
+```typescript
+pattern(regex, customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *regex* | regular expression | A pattern that entered data needs to follow. |
+
+```typescript
+// Invalid value
+expect(pattern(/^[a-b]/)('z')).toEqual(`The value 'z' doen't match the pattern /^[a-b]/`);
+// Valid value
+expect(pattern(/^[a-z0-9]*$/)('12ba')).toEqual(undefined);
+
+// Passing customError
+const errorMsg = 'Custom error.';
+expect(pattern(/^[a-z0-9]*$/, errorMsg)('abc_123')).toEqual(errorMsg);
+```
+
+### Number
+The **number** decoder takes an unknown value, validates it and returns an error or a number depending on the outcome of the validation.
 ```typescript
 (options?: DecoderOption<number>) => (val: unknown, context?: Context | undefined) => number
 ```
@@ -211,8 +321,56 @@ expect(age(20)).toEqual(20);
 // validation of value except number
 expect(() => age("twenty")).toThrow('Expected number but got string.');
 ```
-#### Boolean
-The **boolean** decoder takes an unknown value, validates if its a boolean and returns an error or a number depending on the outcome of the validation.
+
+#### **Built-in Validators for Number**
+
+#### min
+The **min** validator checks whether a value is greater than the minimum value specified. The two parameters of the validators are: *number* and *customError*.
+
+```typescript
+min(number, customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *number* | number | Minimum value that entered data needs to be greater than. |
+
+
+```typescript
+// Invalid value
+expect(min(15)(12)).toEqual(`Value 12 should be greater than 15`);
+// Valid value
+expect(min(15)(17)).toEqual(undefined);
+
+// Passing customError
+const errorMsg = 'Custom error.';
+expect(min(6, errorMsg)(5)).toEqual(errorMsg);
+```
+
+#### max
+The **max** validator checks whether a value is smaller than the maximum value specified. The two parameters of the validators are: *number* and *customError*.
+
+```typescript
+max(number, customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *number* | number | Maximum value that entered data needs to be smaller than. |
+
+```typescript
+// Invalid value
+expect(max(12)(15)).toEqual(`Value 15 should be smaller than 12`);
+// Valid value
+expect(max(6)(4)).toEqual(undefined);
+
+// Passing customError
+const errorMsg = 'Custom error.';
+expect(max(3, errorMsg)(5)).toEqual(errorMsg);
+```
+
+### Boolean
+The **boolean** decoder takes an unknown value, validates it and returns an error or a number depending on the outcome of the validation.
 ```typescript
 (options?: DecoderOption<boolean>) => (val: unknown, context?: Context | undefined) => boolean
 ```
@@ -224,8 +382,8 @@ expect(married(true)).toEqual(true);
 // validation of value except boolean
 expect(() => married(1)).toThrow('Expected boolean but got number.');
 ```
-#### Date
-The **date** decoder takes an unknown value, validates if its a date object and returns an error or a Date depending on the outcome of the validation.
+### Date
+The **date** decoder takes an unknown value, validates if it and returns an error or a Date depending on the outcome of the validation.
 ```typescript
 (options?: DecoderOption<Date>) => (val: unknown, context?: Context | undefined) => Date
 ```
@@ -245,10 +403,58 @@ expect(() => dateOfBirth("2001-15-32")).toThrow("Expected Date but got object.")
 expect(() => dateOfBirth(2001)).toThrow("Expected Date but got number.");
 ```
 
-#### Literal
-The **literal** decoder parses an any value, validates if its value of type Premitive and returns an error or a Premitive value depending on the outcome of the validation. 
+#### **Built-in Validators for Date**
 
-The type Premitive looks like :
+#### minDate
+The **minDate** validator set the minimum date and checks whether the entered date comes after the minimum date. It takes two parameters: *date* and *customError*.
+
+```typescript
+minDate(date, customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *date* | date object | Minimum date that can be entered. |
+
+```typescript
+// Invalid value
+const expectedError = `The entered date must come after Mon Apr 05 2021`;
+expect(minDate(new Date("2021/4/5"))(new Date("2021/3/4"))).toEqual(expectedError);
+// Valid value
+expect(minDate(new Date("2021/4/5"))(new Date("2021/4/6"))).toEqual(undefined);
+
+// Passing customError
+const errorMsg = `The date entered doesn't exist.`;
+expect(minDate(new Date("2021/4/5"), errorMsg)(new Date("2020/4/6"))).toEqual(errorMsg);
+```
+
+#### maxDate
+The **maxDate** validator set the maximum date and checks whether the entered date comes before the maximum date. It takes two parameters: *date* and *customError*.
+
+```typescript
+maxDate(date, customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *date* | date object | Maximum date that can be entered. |
+
+```typescript
+// Invalid value
+const expectedError = `The entered date must come before Mon Apr 05 2021`;
+expect(maxDate(new Date("2021/4/5"))(new Date("2021/6/4"))).toEqual(expectedError);
+// Valid value
+expect(maxDate(new Date("2021/4/5"))(new Date("2020/5/6"))).toEqual(undefined);
+
+// Passing customError
+const errorMsg = `The date entered doesn't exist.`;
+expect(maxDate(new Date("2021/4/5"), errorMsg)(new Date("2022/4/6"))).toEqual(errorMsg);
+```
+
+### Literal
+The **literal** decoder parses an any value, validates if it and returns an error or a Premitive value depending on the outcome of the validation. 
+
+The type **Premitive** looks like :
 ```typescript
 type Premitive = string | number | boolean | null | undefined;
 ```
@@ -265,15 +471,16 @@ expect(apple('apple')).toEqual('apple');
 expect(() => apple('banana')).toThrow(`Expected 'apple', but got 'banana'.`);
 ```
 
-#### Object
-The **object** decoder parses any value, validates if its value is of type Schema and returns an error or a Schema value depending on the outcome of the validation.
+### Object
+The **object** decoder parses any value, validates if it and returns an error or a Schema value depending on the outcome of the validation.
 
+**Schema**
 ```typescript
 type Schema = Record<string, Decoder | Switch<any>>;
 ```
 **Signature of object decoder**
 ```typescript
-(schema: T, option?: ObjectOption<Schema>) => (rawData: any, context?: Context) => Schema
+(schema: T, option?: ObjectOption) => (rawData: any, context?: Context) => Schema
 ```
 
 
@@ -305,10 +512,10 @@ const data = {
 expect(userSchema.bind(userSchema, data)).toThrow(`{"unknownField1":"Unknown field.","unknownField2":"Unknown field."}`)
 ```
 
-#### Partial
+### Partial
 
 ```typescript
-(schema: T, option?: Validator<Schema>) => (val: any, context?: Context) => Schema
+(schema: T, option?: PartialOption) => (val: any, context?: Context) => Schema
 ```
 ```typescript
 // making all fields optional
@@ -326,14 +533,16 @@ const userSchema = partial({
 expect(userSchema.bind(userSchema, {})).toThrow('');
 ```
 
-#### Array
+### Array
 The **array** decoder parses any value, validates if its value is of type Arrary and returns an error or an Array value depending on the outcome of the validation.
+
+**Decoder**
 ```typescript
 type Decoder = (value: any, context?: Context) => any;
 ```
 **Signature of object decoder**
 ```typescript
-(schema: T, option?: Validator<ReturnType<T>[]>) => (val: any, context?: Context) => Array
+(schema: T, option?: ArrayOptions>) => (val: any, context?: Context) => Array
 ```
 
 ```typescript
@@ -379,7 +588,7 @@ expect(namesSchema.bind(namesSchema, ['a', 'b', 'c', 'd'])).toThrow(
 );
 ```
 
-#### Enum
+### Enum
 The **enum** decoder parses any value, validates if its value is of type EnumValues and returns an error or a EnumValues value depending on the outcome of the validation.
 ```typescript
 type EnumValues = string | number | boolean;
@@ -401,7 +610,7 @@ const expectedError = `Expected one of ['apple', 'banana'] but got 'tomato'.`;
 expect(() => fruits('tomato')).toThrow(expectedError);
 ```
 
-#### Union
+### Union
 ```typescript
 (schemas: T, option?: DecoderOption<K>) => (val: unknown, context?: Context) => T
 ```
@@ -420,190 +629,12 @@ expect(() => alphaNumeric(true)).toThrow(
 ```
 ___
 
-## In-build validators
 
-#### minlength
-The **minlength()** validates the minimum length of textual data. It takes two parameters, *size* and *customError*.
-| Name | Type | Description |
-| ----------- | ----------- | ----------- |
-| *size* | number | It is the minimum length of textual data. It accepts a number. |
-| *customError* | string | It is the customized error. If a customized error isn't passed into the validator then it return default error message. |
 
-```typescript
-minLength(size, customError?)
-```
 
-```typescript
-// Invalid value
-expect(minlength(5)("suku")).toEqual(`Should be at least 5 characters long`);
-// Valid value
-expect(minlength(5)("summit")).toEqual(undefined);
 
-// Passing customError
-const errorMsg = 'Custom error.';
-expect(minlength(6, errorMsg)("suku")).toEqual(errorMsg);
-```
 
-#### maxlength
-The **maxlength()** validates the minimum length of textual data. It takes two parameters, *size* and *customError*.
-| Name | Type | Description |
-| ----------- | ----------- | ----------- |
-| *size* | number | It is the maximum length of textual data. It accepts a number. |
 
-```typescript
-maxLength(size, customError?)
-```
 
-```typescript
-// Invalid value
-expect(maxlength(3)("suku")).toEqual(`Should be no longer than ${len} characters`.);
-// Valid value
-expect(maxlength(6)("summit")).toEqual(undefined);
 
-// Passing customError
-const errorMsg = 'Custom error.';
-expect(maxlength(3, errorMsg)("suku")).toEqual(errorMsg);
-```
 
-#### email
-The **email** validator checks if a value is a valid email or not. It only takes *customError* as a parameter.
-
-```typescript
-maxLength(customError?)
-```
-
-```typescript
-// Invalid value
-expect(email()('aninvalid.email')).toEqual('The email is not valid');
-// Valid value
-expect(email()('someone@somewhere.com')).toEqual(undefined);
-
-// Passing customError
-const errorMsg = 'Custom error.';
-expect(email(errorMsg)('aninvalid.email')).toEqual(errorMsg);
-```
-
-#### length
-The **length** validator validates the exact length of the textual data. The two parameters of this validator are : *size* and *customError*.
-| Name | Type | Description |
-| ----------- | ----------- | ----------- |
-| *size* | number | It represents the exact length of the textual data. |
-
-```typescript
-length(size, customError?)
-```
-
-```typescript
-// Invalid value
-const expectedError = `Should be 5 characters long`;
-expect(length(5)('1234')).toEqual(expectedError);expect(length(5)('1234')).toEqual(expectedError);
-// Valid value
-expect(length(1)('1')).toEqual(undefined);
-
-// Passing customError
-const errorMsg = 'Custom error.';
-expect(length(5, errorMsg)('1')).toEqual(errorMsg);
-```
-
-#### pattern
-The **pattern** validator checks if a value matches a specific pattern. It takes two parameters: *regex* and *customError*.
-| Name | Type | Description |
-| ----------- | ----------- | ----------- |
-| *regex* | regular expression | A pattern that entered data needs to follow. |
-```typescript
-pattern(regex, customError?)
-```
-
-```typescript
-// Invalid value
-expect(pattern(/^[a-b]/)('z')).toEqual(`The value 'z' doen't match the pattern /^[a-b]/`);
-// Valid value
-expect(pattern(/^[a-z0-9]*$/)('12ba')).toEqual(undefined);
-
-// Passing customError
-const errorMsg = 'Custom error.';
-expect(pattern(/^[a-z0-9]*$/, errorMsg)('abc_123')).toEqual(errorMsg);
-```
-
-#### min
-The **min** validator checks whether a value is greater than the minimum value specified. The two parameters of the validators are: *number* and *customError*.
-| Name | Type | Description |
-| ----------- | ----------- | ----------- |
-| *number* | number | Minimum value that entered data needs to be greater than. |
-```typescript
-min(number, customError?)
-```
-
-```typescript
-// Invalid value
-expect(min(15)(12)).toEqual(`Value 12 should be greater than 15`);
-// Valid value
-expect(min(15)(17)).toEqual(undefined);
-
-// Passing customError
-const errorMsg = 'Custom error.';
-expect(min(6, errorMsg)(5)).toEqual(errorMsg);
-```
-
-#### max
-The **max** validator checks whether a value is smaller than the maximum value specified. The two parameters of the validators are: *number* and *customError*.
-| Name | Type | Description |
-| ----------- | ----------- | ----------- |
-| *number* | number | Maximum value that entered data needs to be smaller than. |
-
-```typescript
-max(number, customError?)
-```
-
-```typescript
-// Invalid value
-expect(max(12)(15)).toEqual(`Value 15 should be smaller than 12`);
-// Valid value
-expect(max(6)(4)).toEqual(undefined);
-
-// Passing customError
-const errorMsg = 'Custom error.';
-expect(max(3, errorMsg)(5)).toEqual(errorMsg);
-```
-
-#### minDate
-The **minDate** validator set the minimum date and checks whether the entered date comes after the minimum date. It takes two parameters: *date* and *customError*.
-| Name | Type | Description |
-| ----------- | ----------- | ----------- |
-| *date* | date object | Minimum date that can be entered. |
-
-```typescript
-minDate(date, customError?)
-```
-```typescript
-// Invalid value
-const expectedError = `The entered date must come after Mon Apr 05 2021`;
-expect(minDate(new Date("2021/4/5"))(new Date("2021/3/4"))).toEqual(expectedError);
-// Valid value
-expect(minDate(new Date("2021/4/5"))(new Date("2021/4/6"))).toEqual(undefined);
-
-// Passing customError
-const errorMsg = `The date entered doesn't exist.`;
-expect(minDate(new Date("2021/4/5"), errorMsg)(new Date("2020/4/6"))).toEqual(errorMsg);
-```
-
-#### maxDate
-The **maxDate** validator set the maximum date and checks whether the entered date comes before the maximum date. It takes two parameters: *date* and *customError*.
-| Name | Type | Description |
-| ----------- | ----------- | ----------- |
-| *date* | date object | Maximum date that can be entered. |
-```typescript
-maxDate(date, customError?)
-```
-
-```typescript
-// Invalid value
-const expectedError = `The entered date must come before Mon Apr 05 2021`;
-expect(maxDate(new Date("2021/4/5"))(new Date("2021/6/4"))).toEqual(expectedError);
-// Valid value
-expect(maxDate(new Date("2021/4/5"))(new Date("2020/5/6"))).toEqual(undefined);
-
-// Passing customError
-const errorMsg = `The date entered doesn't exist.`;
-expect(maxDate(new Date("2021/4/5"), errorMsg)(new Date("2022/4/6"))).toEqual(errorMsg);
-```

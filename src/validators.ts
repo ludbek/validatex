@@ -62,7 +62,7 @@ export function maxlength(
         errorMsg,
         defaultErrorMsg,
         val,
-        context,
+        context,  
         option,
       });
     }
@@ -140,6 +140,30 @@ export function max(
     return val > option
       ? getError({ errorMsg, defaultErrorMsg, val, context, option })
       : undefined 
+  }
+}
+
+ // isTrue 
+export function isTrue(
+  errorMsg?: CustomErrMsg<boolean, undefined>
+) {
+  return (val: boolean, context?: Context): string | undefined => {
+    const defaultErrorMsg = `Expected true but got false`;
+    return val === true
+      ? undefined
+      : getError({ errorMsg, defaultErrorMsg, val, context, option: undefined })
+  }
+}
+
+ // isFalse
+ export function isFalse(
+  errorMsg?: CustomErrMsg<boolean, undefined>
+) {
+  return (val: boolean, context?: Context): string | undefined => {
+    const defaultErrorMsg = `Expected false but got true`;
+    return val === false
+      ? undefined
+      : getError({ errorMsg, defaultErrorMsg, val, context, option: undefined })
   }
 }
 

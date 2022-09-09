@@ -1,5 +1,5 @@
 import { Context } from './types';
-import { email, length, max, maxDate, maxlength, min, minDate, minlength, pattern } from './validators';
+import { email, isFalse, isTrue, length, max, maxDate, maxlength, min, minDate, minlength, pattern } from './validators';
 
  // Email Validator
 describe('email', () => {
@@ -152,20 +152,35 @@ describe('max', () => {
   });
 })
 
- // date validator
-// describe('validateDate', () => {
-//   it('returns error', () => {
-//     const expectedError = `The given date is invalid`;
-//     expect(validateDate()("2001-13-05")).toEqual(expectedError);
-//   });
-  // it('returns undefined', () => {
-  //   expect(validateDate()(new Date("2021-12-5"))).toEqual(undefined);
-  // });
-  // it('considers errorMsg', () => {
-  //   const errorMsg = `The date entered doesn't exist.`;
-  //   expect(validateDate(errorMsg)(new Date("14/5/2021"))).toEqual(errorMsg);
-  // });
-// })
+ // isTrue validator
+describe('isTrue', () => {
+  it('returns error', () => {
+    const expectedError = `Expected true but got false`;
+    expect(isTrue()(false)).toEqual(expectedError);
+  });
+  it('returns undefined', () => {
+    expect(isTrue()(true)).toEqual(undefined);
+  });
+  it('considers errorMsg', () => {
+    const errorMsg = `Custom error message`;
+    expect(isTrue(errorMsg)(false)).toEqual(errorMsg);
+  });
+})
+
+ // isFalse validator
+ describe('isFalse', () => {
+  it('returns error', () => {
+    const expectedError = `Expected false but got true`;
+    expect(isFalse()(true)).toEqual(expectedError);
+  });
+  it('returns undefined', () => {
+    expect(isFalse()(false)).toEqual(undefined);
+  });
+  it('considers errorMsg', () => {
+    const errorMsg = `Custom error message`;
+    expect(isFalse(errorMsg)(true)).toEqual(errorMsg);
+  });
+})
 
  // min date validator
 describe('minDate', () => {

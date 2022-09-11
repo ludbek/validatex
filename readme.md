@@ -272,7 +272,7 @@ minLength(size, customError?)
 | Name | Type | Description |
 | ----------- | ----------- | ----------- |
 | *size* | number | It is the minimum length of textual data. It accepts a number. |
-| *customError* | string | It is the customized error. If a customized error isn't passed into the validator then it return default error message. |
+| *customError* | string | It is the customized error. If a customized error isn't passed into the validator then it returns default error message. |
 
 
 
@@ -448,6 +448,51 @@ expect(married(true)).toEqual(true);
 // validation of value except boolean
 expect(() => married(1)).toThrow('Expected boolean but got number.');
 ```
+#### Validators for Boolean
+
+##### isTrue
+The **isTrue** validator checks whether a boolean value is true. The only parameter of the validator is: *customError*.
+
+```typescript
+isTrue(customError?)
+```
+
+| Name | Type | Description |
+| ----------- | ----------- | ----------- |
+| *customError* | string | It is the customized error. If a customized error isn't passed into the validator then it returns default error message. |
+
+
+```typescript
+// false value
+const expectedError = `Expected true but got false`;
+expect(isTrue()(false)).toEqual(expectedError);
+// true value
+expect(isTrue()(true)).toEqual(undefined);
+
+// Passing customError
+const errorMsg = `Custom error message`;
+expect(isTrue(errorMsg)(false)).toEqual(errorMsg);
+```
+
+##### isFalse
+The **isFalse** validator checks whether a boolean value is false. The only parameter of the validator is: *customError*.
+
+```typescript
+isFalse(customError?)
+```
+
+```typescript
+// true value
+const expectedError = `Expected false but got true`;
+expect(isFalse()(true)).toEqual(expectedError);
+// false value
+expect(isFalse()(false)).toEqual(undefined);
+
+// Passing customError
+const errorMsg = `Custom error message`;
+expect(isFalse(errorMsg)(true)).toEqual(errorMsg);
+```
+
 ### Date
 The **date** decoder takes an unknown value, validates if it and returns an error or a Date depending on the outcome of the validation.
 ```typescript

@@ -47,8 +47,6 @@ ___
     * [Array](#array)
     * [Enum](#enum)
     * [Union](#union)
-
-[TOC]
 ___
 ## [v1.x doc](https://github.com/ludbek/validatex/tree/v1.0.2)
 

@@ -41,14 +41,12 @@ ___
       * [Validators for Date](#validators-for-date)
         * [minDate](#mindate)
         * [maxDate](#maxdate)
-    * [Literal](#literal)
-    * [Object](#object)
-    * [Partial](#partial)
-    * [Array](#array)
-    * [Enum](#enum)
-    * [Union](#union)
-
-[TOC]
+  * [Literal](#literal)
+  * [Object](#object)
+  * [Partial](#partial)
+  * [Array](#array)
+  * [Enum](#enum)
+  * [Union](#union)
 ___
 ## [v1.x doc](https://github.com/ludbek/validatex/tree/v1.0.2)
 
